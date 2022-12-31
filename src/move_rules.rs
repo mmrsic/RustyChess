@@ -3,10 +3,16 @@ use bracket_lib::prelude::Point;
 use crate::chessboard::{BoardSquare, Chessboard};
 use crate::pieces::Piece;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Move {
     pub piece: Piece,
     pub target: BoardSquare,
+}
+
+impl Move {
+    pub fn new(piece: Piece, target: BoardSquare) -> Self {
+        Self { piece, target }
+    }
 }
 
 /*

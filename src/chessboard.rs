@@ -38,7 +38,7 @@ impl Chessboard {
 }
 
 /** A single chessboard square, assigned to a row/column combination. */
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct BoardSquare {
     /** The row of this square, i.e. one of the values '1' through '8'. */
     pub row: char,
@@ -57,15 +57,15 @@ impl BoardSquare {
     }
 
     /** The rows are called ranks. */
-    pub(crate) fn rank(&self) -> String {
+    pub fn rank(&self) -> String {
         return self.row.to_string();
     }
     /** The columns are called files. */
-    pub(crate) fn file(&self) -> String {
+    pub fn file(&self) -> String {
         return self.column.to_string();
     }
     /** The x position of this square. This depends on the column, i.e. column 'a' is x=0. */
-    pub(crate) fn x(&self) -> i8 {
+    pub fn x(&self) -> i8 {
         return match self.column {
             'a' => 0,
             'b' => 1,
@@ -78,7 +78,7 @@ impl BoardSquare {
         };
     }
     /** The y position of this square. This depends on the row, i.e. row '8' is y=0. */
-    pub(crate) fn y(&self) -> i8 {
+    pub fn y(&self) -> i8 {
         return match self.row {
             '8' => 0,
             '7' => 1,
@@ -91,7 +91,7 @@ impl BoardSquare {
         };
     }
 
-    pub(crate) fn color(&self) -> PieceColor {
+    pub fn color(&self) -> PieceColor {
         return match self.row {
             '8' | '6' | '4' | '2' => match self.column {
                 'a' | 'c' | 'e' | 'g' => PieceColor::White,

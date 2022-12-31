@@ -2,21 +2,13 @@ use bracket_lib::prelude::{to_cp437, FontCharType};
 
 use crate::chessboard::BoardSquare;
 
-pub fn create_start_positions() -> Vec<Piece> {
-    let mut result = Vec::new();
-    for color in [PieceColor::White, PieceColor::Black] {
-        result.push(king(color));
-    }
-    return result;
-}
-
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PieceColor {
     White,
     Black,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Piece {
     pub name: String,
     pub glyph: FontCharType,
@@ -33,6 +25,14 @@ impl Piece {
             position,
         }
     }
+}
+
+pub fn create_start_positions() -> Vec<Piece> {
+    let mut result = Vec::new();
+    for color in [PieceColor::White, PieceColor::Black] {
+        result.push(king(color));
+    }
+    return result;
 }
 
 fn king(color: PieceColor) -> Piece {

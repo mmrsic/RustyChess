@@ -1,7 +1,7 @@
 use bracket_lib::prelude::*;
 
 use crate::chessboard::Chessboard;
-use crate::move_rules::create_basic_possible_moves;
+use crate::move_rules::Move;
 use crate::pieces::{Piece, PieceColor};
 
 pub const TILE_WIDTH: i32 = 64;
@@ -23,6 +23,7 @@ pub fn create_gui() -> BTerm {
         .with_tile_dimensions(TILE_WIDTH, TILE_HEIGHT)
         .with_simple_console_no_bg(8, 8, "terminal8x8.png")
         .with_simple_console_no_bg(8 * FONT_FACTOR, 8 * FONT_FACTOR, "terminal8x8.png")
+        .with_advanced_input(true)
         .build()
         .unwrap()
 }
@@ -75,9 +76,8 @@ fn to_piece_ui_color(piece_color: PieceColor) -> (u8, u8, u8) {
     };
 }
 
-pub fn render_possible_moves(piece: &Piece, board: &Chessboard, ctx: &mut BTerm) {
+pub fn render_possible_moves(possible_moves: Vec<Move>, ctx: &mut BTerm) {
     ctx.set_active_console(CONSOLE_BOARD);
-    let possible_moves = create_basic_possible_moves(&piece, &board);
     possible_moves.iter().for_each(|possible_move| {
         let target_square = possible_move.target;
         ctx.set(
