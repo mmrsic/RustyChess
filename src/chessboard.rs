@@ -94,6 +94,9 @@ impl BoardSquare {
             _ => 7,
         };
     }
+    pub fn position(&self) -> Point {
+        return Point::new(self.x(), self.y());
+    }
 
     pub fn color(&self) -> SquareColor {
         return match self.row {

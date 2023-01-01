@@ -23,6 +23,18 @@ impl Move {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct CapturingMove {
+    pub attacker: Piece,
+    pub victim: Piece,
+}
+
+impl CapturingMove {
+    pub fn new(attacker: Piece, victim: Piece) -> Self {
+        Self { attacker, victim }
+    }
+}
+
 impl ChessGameMove for Move {
     fn execute(&self, game: &mut ChessGame) {
         println!("Execute move: {:?}", self);
@@ -35,12 +47,16 @@ impl ChessGameMove for Move {
     }
 }
 
-/*
-
-pub struct CapturingMove {
-    pub attacker: Piece,
-    pub victim: Piece,
+impl ChessGameMove for CapturingMove {
+    fn execute(&self, game: &mut ChessGame) {
+        println!("Execute move: {:?}", self);
+        game.pieces.retain(|bp| bp.position != self.victim.position);
+        Move::new(self.attacker.clone(), self.victim.position)
+            .execute(game);
+    }
 }
+
+/*
 
 pub struct EnPassantMove {
     pub attacker: Piece,

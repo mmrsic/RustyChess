@@ -48,8 +48,15 @@ impl MainState {
                         .iter()
                         .find(|possible_move| possible_move.target == *selected_target)
                     {
-                        Move::new(chosen_move.piece.clone(), chosen_move.target)
-                            .execute(&mut self.game);
+                        if let Some(target_piece) =
+                            self.game.piece_at(chosen_move.target.position())
+                        {
+                            CapturingMove::new(chosen_move.piece.clone(), target_piece.clone())
+                                .execute(&mut self.game);
+                        } else {
+                            Move::new(chosen_move.piece.clone(), chosen_move.target)
+                                .execute(&mut self.game);
+                        }
                     }
                 }
                 self.app_state = AppState::AwaitingPieceSelection;
