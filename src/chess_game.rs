@@ -1,7 +1,6 @@
 use bracket_lib::geometry::Point;
 
 use crate::chessboard::Chessboard;
-use crate::move_rules::Move;
 use crate::pieces::*;
 
 pub struct ChessGame {
@@ -21,9 +20,5 @@ impl ChessGame {
         self.pieces
             .iter()
             .find(|p| p.position.x() == point.x as i8 && p.position.y() == point.y as i8)
-    }
-
-    pub fn execute_move(&self, move_to_execute: Move) {
-        println!("Execute move: {:?}", move_to_execute);
     }
 }

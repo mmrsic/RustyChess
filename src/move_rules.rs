@@ -1,8 +1,16 @@
 use bracket_lib::prelude::Point;
 
+use crate::chess_game::ChessGame;
 use crate::chessboard::{BoardSquare, Chessboard};
 use crate::pieces::Piece;
 
+/** A trait which denotes a single move within a game of Chess. */
+pub trait ChessGameMove {
+    /** Execute the [ChessGameMove]. */
+    fn execute(&self, game: &mut ChessGame);
+}
+
+/** A single Chess game move of a piece onto an empty target field. */
 #[derive(Debug, Clone)]
 pub struct Move {
     pub piece: Piece,
@@ -12,6 +20,18 @@ pub struct Move {
 impl Move {
     pub fn new(piece: Piece, target: BoardSquare) -> Self {
         Self { piece, target }
+    }
+}
+
+impl ChessGameMove for Move {
+    fn execute(&self, game: &mut ChessGame) {
+        println!("Execute move: {:?}", self);
+        game.pieces.iter_mut().for_each(|bp| {
+            if bp.position == self.piece.position {
+                bp.position.clone_from(&self.target);
+            }
+        });
+        println!("Num pieces: {}", game.pieces.len())
     }
 }
 

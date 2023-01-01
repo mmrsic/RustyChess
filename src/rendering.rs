@@ -45,6 +45,8 @@ pub fn render_board(board: &Chessboard, ctx: &mut BTerm) {
 
 /** Render a collection of pieces onto a given [BTerm]. */
 pub fn render_pieces(pieces: &Vec<Piece>, ctx: &mut BTerm) {
+    ctx.set_active_console(CONSOLE_PIECES);
+    ctx.cls();
     for piece in pieces {
         render_piece(&piece, ctx);
     }

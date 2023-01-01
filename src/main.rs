@@ -1,7 +1,7 @@
 use bracket_lib::prelude::*;
 
 use crate::chess_game::ChessGame;
-use crate::move_rules::{create_basic_possible_moves, Move};
+use crate::move_rules::{create_basic_possible_moves, ChessGameMove, Move};
 use crate::rendering::*;
 use crate::user_move::UserMove;
 
@@ -46,10 +46,10 @@ impl MainState {
                     if let Some(chosen_move) = user_move
                         .possible_moves
                         .iter()
-                        .find(|candidate| candidate.target == *selected_target)
+                        .find(|possible_move| possible_move.target == *selected_target)
                     {
-                        self.game
-                            .execute_move(Move::new(chosen_move.piece.clone(), chosen_move.target));
+                        Move::new(chosen_move.piece.clone(), chosen_move.target)
+                            .execute(&mut self.game);
                     }
                 }
                 self.app_state = AppState::AwaitingPieceSelection;
