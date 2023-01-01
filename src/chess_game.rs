@@ -1,6 +1,6 @@
 use bracket_lib::geometry::Point;
 
-use crate::chessboard::Chessboard;
+use crate::chessboard::*;
 use crate::pieces::*;
 
 pub struct ChessGame {

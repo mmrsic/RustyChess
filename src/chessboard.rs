@@ -1,8 +1,12 @@
 use std::fmt::{Display, Formatter};
 
-use bracket_lib::geometry::Point;
+use bracket_lib::prelude::Point;
 
-use crate::pieces::PieceColor;
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum SquareColor {
+    White,
+    Black,
+}
 
 /** A single chessboard consisting of squares, organized in rows and columns. */
 pub struct Chessboard {
@@ -91,15 +95,15 @@ impl BoardSquare {
         };
     }
 
-    pub fn color(&self) -> PieceColor {
+    pub fn color(&self) -> SquareColor {
         return match self.row {
             '8' | '6' | '4' | '2' => match self.column {
-                'a' | 'c' | 'e' | 'g' => PieceColor::White,
-                _ => PieceColor::Black,
+                'a' | 'c' | 'e' | 'g' => SquareColor::White,
+                _ => SquareColor::Black,
             },
             _ => match self.column {
-                'a' | 'c' | 'e' | 'g' => PieceColor::Black,
-                _ => PieceColor::White,
+                'a' | 'c' | 'e' | 'g' => SquareColor::Black,
+                _ => SquareColor::White,
             },
         };
     }

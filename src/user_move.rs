@@ -5,7 +5,6 @@ use crate::pieces::Piece;
 pub struct UserMove {
     pub piece: Piece,
     pub possible_moves: Vec<Move>,
-    pub chosen_move: Option<Move>,
 }
 
 impl UserMove {
@@ -13,7 +12,6 @@ impl UserMove {
         Self {
             piece,
             possible_moves,
-            chosen_move: None,
         }
     }
 }

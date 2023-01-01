@@ -1,8 +1,8 @@
 use bracket_lib::prelude::*;
 
-use crate::chessboard::Chessboard;
-use crate::move_rules::Move;
-use crate::pieces::{Piece, PieceColor};
+use crate::chessboard::*;
+use crate::move_rules::*;
+use crate::pieces::*;
 
 pub const TILE_WIDTH: i32 = 64;
 pub const TILE_HEIGHT: i32 = 64;
@@ -64,10 +64,10 @@ pub fn render_piece(piece: &Piece, ctx: &mut BTerm) {
     );
 }
 
-fn to_square_ui_color(piece_color: PieceColor) -> (u8, u8, u8) {
+fn to_square_ui_color(piece_color: SquareColor) -> (u8, u8, u8) {
     return match piece_color {
-        PieceColor::White => LIGHT_GRAY,
-        PieceColor::Black => DARK_GRAY,
+        SquareColor::White => LIGHT_GRAY,
+        SquareColor::Black => DARK_GRAY,
     };
 }
 
