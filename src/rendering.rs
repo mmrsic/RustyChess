@@ -60,7 +60,7 @@ pub fn render_piece(piece: &Piece, ctx: &mut BTerm) {
         piece.position.y(),
         to_piece_ui_color(piece.color),
         to_square_ui_color(piece.position.color()),
-        piece.glyph,
+        to_cp437(piece.glyph),
     );
 }
 

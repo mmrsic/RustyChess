@@ -22,3 +22,26 @@ impl ChessGame {
             .find(|p| p.position.x() == point.x as i8 && p.position.y() == point.y as i8)
     }
 }
+
+fn create_start_positions() -> Vec<Piece> {
+    let mut result = Vec::new();
+    for color in [PieceColor::White, PieceColor::Black] {
+        result.push(create_king_start(color));
+    }
+    return result;
+}
+
+fn create_king_start(color: PieceColor) -> Piece {
+    Piece::new(
+        "King".to_string(),
+        'K',
+        color,
+        BoardSquare {
+            row: match color {
+                PieceColor::White => '1',
+                PieceColor::Black => '8',
+            },
+            column: 'e',
+        },
+    )
+}

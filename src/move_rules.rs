@@ -51,8 +51,7 @@ impl ChessGameMove for CapturingMove {
     fn execute(&self, game: &mut ChessGame) {
         println!("Execute move: {:?}", self);
         game.pieces.retain(|bp| bp.position != self.victim.position);
-        Move::new(self.attacker.clone(), self.victim.position)
-            .execute(game);
+        Move::new(self.attacker.clone(), self.victim.position).execute(game);
     }
 }
 
