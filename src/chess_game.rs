@@ -36,12 +36,12 @@ fn create_king_start(color: PieceColor) -> Piece {
         "King".to_string(),
         'K',
         color,
-        BoardSquare {
-            row: match color {
+        BoardSquare::new(
+            match color {
                 PieceColor::White => '1',
                 PieceColor::Black => '8',
             },
-            column: 'e',
-        },
+            'e',
+        ),
     )
 }

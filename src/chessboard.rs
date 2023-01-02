@@ -34,10 +34,7 @@ impl Chessboard {
             .find(|s| s.x() == (coord.x as i8) && s.y() == (coord.y as i8))
     }
     pub fn get_square_relative(&self, original: BoardSquare, delta: Point) -> Option<&BoardSquare> {
-        self.square_at(Point::new(
-            original.x() + delta.x as i8,
-            original.y() + delta.y as i8,
-        ))
+        return self.square_at(original.position() + delta);
     }
 }
 
@@ -45,8 +42,8 @@ impl Chessboard {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct BoardSquare {
     /** The row of this square, i.e. one of the values '1' through '8'. */
-    pub row: char,
-    pub column: char,
+    row: char,
+    column: char,
 }
 
 impl Display for BoardSquare {
@@ -56,17 +53,24 @@ impl Display for BoardSquare {
 }
 
 impl BoardSquare {
-    fn new(row: char, column: char) -> Self {
+    pub(crate) fn new(row: char, column: char) -> Self {
         Self { row, column }
     }
 
-    /** The rows are called ranks. */
-    pub fn rank(&self) -> String {
+    /** The row of this square. */
+    pub fn row(&self) -> String {
         return self.row.to_string();
+    }
+    pub fn rank(&self) -> String {
+        return self.row();
+    }
+    /** The columns are called files. */
+    pub fn column(&self) -> String {
+        return self.column.to_string();
     }
     /** The columns are called files. */
     pub fn file(&self) -> String {
-        return self.column.to_string();
+        return self.column();
     }
     /** The x position of this square. This depends on the column, i.e. column 'a' is x=0. */
     pub fn x(&self) -> i8 {
