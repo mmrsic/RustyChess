@@ -60,7 +60,14 @@ pub fn render_piece(piece: &Piece, ctx: &mut BTerm) {
         piece.position.y(),
         to_piece_ui_color(piece.color),
         to_square_ui_color(piece.position.color()),
-        to_cp437(piece.glyph),
+        to_cp437(match piece.piece_type {
+            PieceType::King => 'K',
+            PieceType::Queen => 'q',
+            PieceType::Rook => 'r',
+            PieceType::Bishop => 'b',
+            PieceType::Knight => 'k',
+            PieceType::Pawn => 'p',
+        }),
     );
 }
 

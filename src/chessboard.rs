@@ -28,22 +28,31 @@ impl Chessboard {
     pub fn squares(&self) -> Vec<BoardSquare> {
         return self.squares.clone();
     }
+    /** The optional square at a given coordinate. None if not valid. */
     pub fn square_at(&self, coord: Point) -> Option<&BoardSquare> {
         self.squares
             .iter()
             .find(|s| s.x() == (coord.x as i8) && s.y() == (coord.y as i8))
     }
-    pub fn get_square_relative(&self, original: BoardSquare, delta: Point) -> Option<&BoardSquare> {
-        return self.square_at(original.position() + delta);
+    /** Get a square positioned relatively to a given square. */
+    pub fn get_square_relative(&self, square: BoardSquare, delta: &Point) -> Option<&BoardSquare> {
+        return self.square_at(square.position() + *delta);
     }
 }
 
 /** A single chessboard square, assigned to a row/column combination. */
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, Hash)]
 pub struct BoardSquare {
     /** The row of this square, i.e. one of the values '1' through '8'. */
     row: char,
     column: char,
+}
+
+impl PartialEq<Self> for BoardSquare {
+    fn eq(&self, other: &Self) -> bool {
+        let result = self.row == other.row && self.column == other.column;
+        result
+    }
 }
 
 impl Display for BoardSquare {

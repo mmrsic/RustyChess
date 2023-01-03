@@ -2,6 +2,7 @@ use bracket_lib::prelude::*;
 
 use crate::chess_game::*;
 use crate::move_rules::*;
+use crate::pieces::*;
 use crate::rendering::*;
 use crate::user_move::*;
 
@@ -33,11 +34,15 @@ impl MainState {
         match &self.app_state {
             AppState::AwaitingPieceSelection => {
                 if let Some(selected_piece) = self.game.piece_at(coord) {
+                    let mut possible_moves = self.game.possible_moves(selected_piece);
+                    if selected_piece.piece_type == PieceType::King {
+                        let opposite_threats = self
+                            .game
+                            .piece_controlled_area(|p| p.color != selected_piece.color);
+                        possible_moves.retain(|m| !opposite_threats.contains(&m.target));
+                    }
                     self.app_state = AppState::AwaitingMoveSelection {
-                        user_move: UserMove::new(
-                            selected_piece.clone(),
-                            create_basic_possible_moves(selected_piece, &self.game.board),
-                        ),
+                        user_move: UserMove::new(selected_piece.clone(), possible_moves),
                     };
                 }
             }

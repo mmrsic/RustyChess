@@ -1,7 +1,5 @@
-use bracket_lib::prelude::Point;
-
 use crate::chess_game::ChessGame;
-use crate::chessboard::{BoardSquare, Chessboard};
+use crate::chessboard::BoardSquare;
 use crate::pieces::Piece;
 
 /** A trait which denotes a single move within a game of Chess. */
@@ -37,21 +35,21 @@ impl CapturingMove {
 
 impl ChessGameMove for Move {
     fn execute(&self, game: &mut ChessGame) {
-        println!("Execute move: {:?}", self);
-        game.pieces.iter_mut().for_each(|bp| {
-            if bp.position == self.piece.position {
-                bp.position.clone_from(&self.target);
+        game.pieces.iter_mut().for_each(|game_piece| {
+            if game_piece.position == self.piece.position {
+                game_piece.position.clone_from(&self.target);
             }
         });
-        println!("Num pieces: {}", game.pieces.len())
+        println!("Executed move: {:?}", self);
     }
 }
 
 impl ChessGameMove for CapturingMove {
     fn execute(&self, game: &mut ChessGame) {
-        println!("Execute move: {:?}", self);
-        game.pieces.retain(|bp| bp.position != self.victim.position);
+        game.pieces
+            .retain(|game_piece| game_piece.position != self.victim.position);
         Move::new(self.attacker.clone(), self.victim.position).execute(game);
+        println!("Number of pieces: {:?}", game.pieces.len());
     }
 }
 
@@ -69,23 +67,3 @@ pub struct CastlingMove {
 }
 
 */
-
-pub fn create_basic_possible_moves(piece: &Piece, board: &Chessboard) -> Vec<Move> {
-    let mut result = Vec::new();
-
-    for delta_x in -1..=1 {
-        for delta_y in -1..=1 {
-            if delta_x != 0 || delta_y != 0 {
-                let delta = Point::new(delta_x, delta_y);
-                if let Some(optional_square) = board.get_square_relative(piece.position, delta) {
-                    result.push(Move {
-                        piece: piece.clone(),
-                        target: *optional_square,
-                    });
-                }
-            }
-        }
-    }
-
-    return result;
-}
