@@ -1,7 +1,6 @@
 use bracket_lib::prelude::*;
 
 use crate::chess_game::*;
-use crate::move_rules::*;
 use crate::pieces::*;
 use crate::rendering::*;
 use crate::user_move::*;
@@ -53,27 +52,17 @@ impl MainState {
                         .iter()
                         .find(|possible_move| possible_move.target == *selected_target)
                     {
-                        if let Some(target_piece) =
-                            self.game.piece_at(chosen_move.target.position())
-                        {
-                            CapturingMove::new(chosen_move.piece.clone(), target_piece.clone())
-                                .execute(&mut self.game);
-                        } else {
-                            Move::new(chosen_move.piece.clone(), chosen_move.target)
-                                .execute(&mut self.game);
-                        }
+                        self.game.execute_move(chosen_move);
                     }
                 }
                 self.app_state = AppState::AwaitingPieceSelection;
             }
-            AppState::NoActionRequired => {}
         }
     }
 }
 
 #[derive(Debug)]
 enum AppState {
-    NoActionRequired,
     AwaitingPieceSelection,
     AwaitingMoveSelection { user_move: UserMove },
 }
@@ -88,6 +77,7 @@ impl GameState for MainState {
             BEvent::CloseRequested { .. } => ctx.quit(),
             _ => {}
         });
+
         if let AppState::AwaitingMoveSelection { user_move } = &self.app_state {
             render_possible_moves(user_move.possible_moves.clone(), ctx);
         }

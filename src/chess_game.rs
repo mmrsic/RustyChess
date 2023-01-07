@@ -18,7 +18,6 @@ impl ChessGame {
             pieces: create_start_positions(),
         }
     }
-
     pub fn piece_at(&self, point: Point) -> Option<&Piece> {
         self.pieces
             .iter()
@@ -30,6 +29,10 @@ impl ChessGame {
         piece_deltas(piece)
             .iter()
             .filter_map(|delta| self.board.get_square_relative(piece.position, delta))
+            .filter(|square| {
+                let other_piece = self.piece_at(square.position());
+                None == other_piece || other_piece.unwrap().color != piece.color
+            })
             .map(|target| Move {
                 piece: piece.clone(),
                 target: *target,
@@ -50,12 +53,23 @@ impl ChessGame {
         });
         return result;
     }
+
+    pub(crate) fn execute_move(&mut self, chosen_move: &Move) {
+        if let Some(target_piece) = self.piece_at(chosen_move.target.position()) {
+            CapturingMove::new(chosen_move.piece.clone(), target_piece.clone()).execute(self);
+        } else {
+            Move::new(chosen_move.piece.clone(), chosen_move.target).execute(self);
+        }
+    }
 }
 
 fn create_start_positions() -> Vec<Piece> {
     let mut result = Vec::new();
     for color in [PieceColor::White, PieceColor::Black] {
         result.push(create_king_start(color));
+        create_knights_start(color)
+            .iter()
+            .for_each(|knight| result.push(knight.clone()))
     }
     return result;
 }
@@ -66,4 +80,15 @@ fn create_king_start(color: PieceColor) -> Piece {
         PieceColor::Black => '8',
     };
     Piece::new(PieceType::King, color, BoardSquare::new(row, 'e'))
+}
+
+fn create_knights_start(color: PieceColor) -> Vec<Piece> {
+    let row = match color {
+        PieceColor::White => '1',
+        PieceColor::Black => '8',
+    };
+    vec![
+        Piece::new(PieceType::Knight, color, BoardSquare::new(row, 'b')),
+        Piece::new(PieceType::Knight, color, BoardSquare::new(row, 'g')),
+    ]
 }

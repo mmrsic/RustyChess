@@ -36,7 +36,11 @@ impl Piece {
 }
 
 pub fn piece_deltas(piece: &Piece) -> Vec<Point> {
-    king_move_deltas()
+    return match piece.piece_type {
+        PieceType::King => king_move_deltas(),
+        PieceType::Knight => knight_move_deltas(),
+        _ => Vec::new(),
+    };
 }
 
 fn king_move_deltas() -> Vec<Point> {
@@ -49,4 +53,17 @@ fn king_move_deltas() -> Vec<Point> {
         }
     }
     deltas
+}
+
+fn knight_move_deltas() -> Vec<Point> {
+    vec![
+        Point::new(-1, -2),
+        Point::new(1, -2),
+        Point::new(2, -1),
+        Point::new(2, 1),
+        Point::new(1, 2),
+        Point::new(-1, 2),
+        Point::new(-2, 1),
+        Point::new(-2, -1),
+    ]
 }

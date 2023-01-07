@@ -66,22 +66,6 @@ impl BoardSquare {
         Self { row, column }
     }
 
-    /** The row of this square. */
-    pub fn row(&self) -> String {
-        return self.row.to_string();
-    }
-    pub fn rank(&self) -> String {
-        return self.row();
-    }
-    /** The columns are called files. */
-    pub fn column(&self) -> String {
-        return self.column.to_string();
-    }
-    /** The columns are called files. */
-    pub fn file(&self) -> String {
-        return self.column();
-    }
-    /** The x position of this square. This depends on the column, i.e. column 'a' is x=0. */
     pub fn x(&self) -> i8 {
         return match self.column {
             'a' => 0,
