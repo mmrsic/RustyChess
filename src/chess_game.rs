@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use bracket_lib::geometry::Point;
 
 use crate::chessboard::*;
@@ -21,37 +19,7 @@ impl ChessGame {
     pub fn piece_at(&self, point: Point) -> Option<&Piece> {
         self.pieces
             .iter()
-            .find(|p| p.position.x() == point.x as i8 && p.position.y() == point.y as i8)
-    }
-
-    /** All possible moves a given piece can currently make in this [ChessGame]. */
-    pub fn possible_moves(&self, piece: &Piece) -> Vec<Move> {
-        piece_deltas(piece)
-            .iter()
-            .filter_map(|delta| self.board.get_square_relative(piece.position, delta))
-            .filter(|square| {
-                let other_piece = self.piece_at(square.position());
-                None == other_piece || other_piece.unwrap().color != piece.color
-            })
-            .map(|target| Move {
-                piece: piece.clone(),
-                target: *target,
-            })
-            .collect()
-    }
-
-    /** All [BoardSquare]s currently threatened by the pieces (applied to a given filter) of this [ChessGame].  */
-    pub fn piece_controlled_area<G>(&self, piece_filter: G) -> HashSet<BoardSquare>
-    where
-        G: FnMut(&&Piece) -> bool,
-    {
-        let mut result = HashSet::new();
-        self.pieces.iter().filter(piece_filter).for_each(|piece| {
-            self.possible_moves(piece).iter().for_each(|possible_move| {
-                result.insert(possible_move.target);
-            })
-        });
-        return result;
+            .find(|p| p.square.x() == point.x as i8 && p.square.y() == point.y as i8)
     }
 
     pub(crate) fn execute_move(&mut self, chosen_move: &Move) {

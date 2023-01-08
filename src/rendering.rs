@@ -56,10 +56,10 @@ pub fn render_pieces(pieces: &Vec<Piece>, ctx: &mut BTerm) {
 pub fn render_piece(piece: &Piece, ctx: &mut BTerm) {
     ctx.set_active_console(CONSOLE_PIECES);
     ctx.set(
-        piece.position.x(),
-        piece.position.y(),
+        piece.square.x(),
+        piece.square.y(),
         to_piece_ui_color(piece.color),
-        to_square_ui_color(piece.position.color()),
+        to_square_ui_color(piece.square.color()),
         to_cp437(match piece.piece_type {
             PieceType::King => 'K',
             PieceType::Queen => 'q',

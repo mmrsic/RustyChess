@@ -2,7 +2,7 @@ use bracket_lib::prelude::Point;
 
 use crate::chessboard::BoardSquare;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Copy)]
 pub enum PieceType {
     King,
     Queen,
@@ -18,11 +18,11 @@ pub enum PieceColor {
     Black,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Piece {
     pub piece_type: PieceType,
     pub color: PieceColor,
-    pub position: BoardSquare,
+    pub square: BoardSquare,
 }
 
 impl Piece {
@@ -30,7 +30,7 @@ impl Piece {
         Self {
             piece_type,
             color,
-            position,
+            square: position,
         }
     }
 }

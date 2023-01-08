@@ -1,10 +1,10 @@
 use bracket_lib::prelude::*;
 
 use crate::chess_game::*;
-use crate::pieces::*;
 use crate::rendering::*;
 use crate::user_move::*;
 
+mod analysis;
 mod chess_game;
 mod chessboard;
 mod move_rules;
@@ -33,16 +33,12 @@ impl MainState {
         match &self.app_state {
             AppState::AwaitingPieceSelection => {
                 if let Some(selected_piece) = self.game.piece_at(coord) {
-                    let mut possible_moves = self.game.possible_moves(selected_piece);
-                    if selected_piece.piece_type == PieceType::King {
-                        let opposite_threats = self
-                            .game
-                            .piece_controlled_area(|p| p.color != selected_piece.color);
-                        possible_moves.retain(|m| !opposite_threats.contains(&m.target));
-                    }
+                    let possible_moves = self.game.possible_moves(selected_piece);
                     self.app_state = AppState::AwaitingMoveSelection {
                         user_move: UserMove::new(selected_piece.clone(), possible_moves),
                     };
+                } else if let Some(x) = self.game.board.square_at(coord) {
+                    self.game.square_contesters(x);
                 }
             }
             AppState::AwaitingMoveSelection { user_move } => {

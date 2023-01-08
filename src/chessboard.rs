@@ -57,7 +57,7 @@ impl PartialEq<Self> for BoardSquare {
 
 impl Display for BoardSquare {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}", self.column, self.row)
+        write!(f, "{}{}", self.file(), self.rank())
     }
 }
 
@@ -90,6 +90,22 @@ impl BoardSquare {
             '2' => 6,
             _ => 7,
         };
+    }
+    /** The row of this square. */
+    pub fn row(&self) -> String {
+        return self.row.to_string();
+    }
+    /** The columns are called files. */
+    pub fn column(&self) -> String {
+        return self.column.to_string();
+    }
+    /** The rows are called ranks. */
+    pub fn rank(&self) -> String {
+        return self.row();
+    }
+    /** The columns are called files. */
+    pub fn file(&self) -> String {
+        return self.column();
     }
     pub fn position(&self) -> Point {
         return Point::new(self.x(), self.y());
