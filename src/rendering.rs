@@ -1,5 +1,6 @@
 use bracket_lib::prelude::*;
 
+use crate::chess_game::ChessGame;
 use crate::chessboard::*;
 use crate::move_rules::*;
 use crate::pieces::*;
@@ -9,20 +10,29 @@ pub const TILE_HEIGHT: i32 = 64;
 
 const CONSOLE_BOARD: usize = 0;
 const CONSOLE_PIECES: usize = 1;
+const CONSOLE_TEXTS: usize = 2;
 
-const FONT_FACTOR: i32 = 4;
+const GRAPHICS_WIDTH: i32 = 12;
+const GRAPHICS_HEIGHT: i32 = 8;
+const FONT_WIDTH_FACTOR: i32 = 8;
+const FONT_HEIGHT_FACTOR: i32 = 4;
+const TEXT_WIDTH: i32 = GRAPHICS_WIDTH * FONT_WIDTH_FACTOR;
+const TEXT_HEIGHT: i32 = GRAPHICS_HEIGHT * FONT_HEIGHT_FACTOR;
+const TEXT_LEFT_START: i32 = 8 * FONT_WIDTH_FACTOR + 1;
+
 const BLOCK_CODE: char = '\u{2588}';
 const POSSIBLE_MOVE_CODE: char = '\u{2591}';
+const CHESS_CODE: char = '\u{2591}';
 const BACKGROUND: (u8, u8, u8) = LIGHT_GREEN;
 
 pub fn create_gui() -> BTerm {
-    BTermBuilder::simple(8, 8)
+    BTermBuilder::simple(GRAPHICS_WIDTH, GRAPHICS_HEIGHT)
         .unwrap()
         .with_fps_cap(25.0)
         .with_title("C H E S S")
         .with_tile_dimensions(TILE_WIDTH, TILE_HEIGHT)
-        .with_simple_console_no_bg(8, 8, "terminal8x8.png")
-        .with_simple_console_no_bg(8 * FONT_FACTOR, 8 * FONT_FACTOR, "terminal8x8.png")
+        .with_simple_console_no_bg(GRAPHICS_WIDTH, GRAPHICS_HEIGHT, "terminal8x8.png")
+        .with_simple_console_no_bg(TEXT_WIDTH, TEXT_HEIGHT, "terminal8x8.png")
         .with_advanced_input(true)
         .build()
         .unwrap()
@@ -93,8 +103,28 @@ pub fn render_possible_moves(possible_moves: Vec<Move>, ctx: &mut BTerm) {
             target_square.x(),
             target_square.y(),
             LIGHT_GREEN,
-            to_square_ui_color(possible_move.target.color()),
+            to_square_ui_color(target_square.color()),
             to_cp437(POSSIBLE_MOVE_CODE),
         );
     });
+}
+
+pub fn render_chess(game: &ChessGame, ctx: &mut BTerm) {
+    ctx.set_active_console(CONSOLE_TEXTS);
+    ctx.cls();
+    let chess_moves = game.chess();
+    if !chess_moves.is_empty() {
+        ctx.set_active_console(CONSOLE_BOARD);
+        let chess_square = chess_moves.iter().nth(0).unwrap().target;
+        ctx.set(
+            chess_square.x(),
+            chess_square.y(),
+            RED,
+            to_square_ui_color(chess_square.color()),
+            to_cp437(CHESS_CODE),
+        );
+        ctx.set_active_console(CONSOLE_TEXTS);
+        ctx.print(TEXT_LEFT_START, 1, "Chess");
+    }
+    ctx.set_active_console(CONSOLE_PIECES);
 }

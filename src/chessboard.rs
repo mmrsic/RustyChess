@@ -9,6 +9,7 @@ pub enum SquareColor {
 }
 
 /** A single chessboard consisting of squares, organized in rows and columns. */
+#[derive(Clone, Debug)]
 pub struct Chessboard {
     squares: Vec<BoardSquare>,
 }

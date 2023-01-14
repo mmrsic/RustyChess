@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::ops::Add;
 
 use crate::chess_game::ChessGame;
@@ -13,20 +13,24 @@ impl ChessGame {
             .iter()
             .filter_map(|delta| self.board.get_square_relative(piece.square, delta))
             .filter(|target_square| {
-                let target_piece = self.piece_at(target_square.position());
-                (None == target_piece || target_piece.unwrap().color != piece.color)
-                    && (piece.piece_type != PieceType::King
-                        || self
-                            .square_contesters(&target_square)
-                            .iter()
-                            .filter(|p| p.square != piece.square)
-                            .all(|p| p.color == piece.color))
+                self.is_target_allowed_for_color(piece.color, target_square)
+                    && !self.is_in_chess(piece, &target_square)
             })
             .map(|target| Move {
                 piece: piece.clone(),
                 target: *target,
             })
+            .filter(|chess_move| !self.calculate_move(chess_move).is_chess_color(piece.color))
             .collect()
+    }
+
+    /** Whether any of the kings of this game is in chess. */
+    pub fn is_in_chess(&self, piece: &Piece, target_square: &&&BoardSquare) -> bool {
+        piece.piece_type == PieceType::King
+            && self
+                .square_contesters(&&target_square)
+                .iter()
+                .any(|p| p.color != piece.color)
     }
 
     /** All [Piece]s able to move to a given target square. */
@@ -55,17 +59,10 @@ impl ChessGame {
         return result;
     }
 
-    /** All [BoardSquare]s currently threatened by the pieces (applied to a given filter) of this [ChessGame].  */
-    pub fn piece_controlled_area<G>(&self, piece_filter: G) -> HashSet<BoardSquare>
-    where
-        G: FnMut(&&Piece) -> bool,
-    {
-        let mut result = HashSet::new();
-        self.pieces.iter().filter(piece_filter).for_each(|piece| {
-            self.possible_moves(piece).iter().for_each(|possible_move| {
-                result.insert(possible_move.target);
-            })
-        });
-        return result;
+    /** Return a clone of the game where a given move is executed without affecting the original game, */
+    pub fn calculate_move(&self, chess_move: &Move) -> ChessGame {
+        let mut result = self.clone();
+        result.execute_move(&chess_move);
+        result
     }
 }

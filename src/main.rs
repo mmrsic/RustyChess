@@ -37,8 +37,9 @@ impl MainState {
                     self.app_state = AppState::AwaitingMoveSelection {
                         user_move: UserMove::new(selected_piece.clone(), possible_moves),
                     };
-                } else if let Some(x) = self.game.board.square_at(coord) {
-                    self.game.square_contesters(x);
+                } else if let Some(square) = self.game.board.square_at(coord) {
+                    let contesters = self.game.square_contesters(square);
+                    println!("Contesters for {}: {:?}", square, contesters);
                 }
             }
             AppState::AwaitingMoveSelection { user_move } => {
@@ -67,6 +68,7 @@ impl GameState for MainState {
     fn tick(&mut self, ctx: &mut BTerm) {
         render_board(&self.game.board, ctx);
         render_pieces(&self.game.pieces, ctx);
+        render_chess(&self.game, ctx);
 
         INPUT.lock().for_each_message(|m| match m {
             BEvent::MouseButtonDown { button: 0 } => self.evaluate_mouse_click(ctx.mouse_point()),
