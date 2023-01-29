@@ -25,14 +25,25 @@ const POSSIBLE_MOVE_CODE: char = '\u{2591}';
 const CHESS_CODE: char = '\u{2591}';
 const BACKGROUND: (u8, u8, u8) = LIGHT_GREEN;
 
+const TEXT_FILE: &'static str = "terminal8x8.png";
+const CHESS_PIECES_FILE: &'static str = "chesspieces.png";
+const KING_OFFSET: i32 = 0;
+const QUEEN_OFFSET: i32 = KING_OFFSET + 1;
+const ROOK_OFFSET: i32 = QUEEN_OFFSET + 1;
+const BISHOP_OFFSET: i32 = ROOK_OFFSET + 1;
+const KNIGHT_OFFSET: i32 = BISHOP_OFFSET + 1;
+const PAWN_OFFSET: i32 = KNIGHT_OFFSET + 1;
+
 pub fn create_gui() -> BTerm {
     BTermBuilder::simple(GRAPHICS_WIDTH, GRAPHICS_HEIGHT)
         .unwrap()
+        .with_resource_path("resources")
+        .with_font("chesspieces.png", TILE_WIDTH, TILE_HEIGHT)
         .with_fps_cap(25.0)
         .with_title("C H E S S")
         .with_tile_dimensions(TILE_WIDTH, TILE_HEIGHT)
-        .with_simple_console_no_bg(GRAPHICS_WIDTH, GRAPHICS_HEIGHT, "terminal8x8.png")
-        .with_simple_console_no_bg(TEXT_WIDTH, TEXT_HEIGHT, "terminal8x8.png")
+        .with_simple_console_no_bg(GRAPHICS_WIDTH, GRAPHICS_HEIGHT, CHESS_PIECES_FILE)
+        .with_simple_console_no_bg(TEXT_WIDTH, TEXT_HEIGHT, TEXT_FILE)
         .with_advanced_input(true)
         .build()
         .unwrap()
@@ -70,14 +81,14 @@ pub fn render_piece(piece: &Piece, ctx: &mut BTerm) {
         piece.square.y(),
         to_piece_ui_color(piece.color),
         to_square_ui_color(piece.square.color()),
-        to_cp437(match piece.piece_type {
-            PieceType::King => 'K',
-            PieceType::Queen => 'q',
-            PieceType::Rook => 'r',
-            PieceType::Bishop => 'b',
-            PieceType::Knight => 'k',
-            PieceType::Pawn => 'p',
-        }),
+        match piece.piece_type {
+            PieceType::King => KING_OFFSET,
+            PieceType::Queen => QUEEN_OFFSET,
+            PieceType::Rook => ROOK_OFFSET,
+            PieceType::Bishop => BISHOP_OFFSET,
+            PieceType::Knight => KNIGHT_OFFSET,
+            PieceType::Pawn => PAWN_OFFSET,
+        },
     );
 }
 
