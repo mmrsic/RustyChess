@@ -42,7 +42,6 @@ impl ChessGameMove for Move {
                 game_piece.square.clone_from(&self.target);
             }
         });
-        println!("Executed move: {:?}", self);
     }
 }
 
@@ -51,7 +50,6 @@ impl ChessGameMove for CapturingMove {
         game.pieces
             .retain(|game_piece| game_piece.square != self.victim.square);
         Move::new(self.attacker.clone(), self.victim.square).execute(game);
-        println!("Number of pieces: {:?}", game.pieces.len());
     }
 }
 

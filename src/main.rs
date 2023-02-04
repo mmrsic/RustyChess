@@ -50,6 +50,7 @@ impl MainState {
                         .find(|possible_move| possible_move.target == *selected_target)
                     {
                         self.game.execute_move(chosen_move);
+                        println!("Executed: {:?}", chosen_move)
                     }
                 }
                 self.app_state = AppState::AwaitingPieceSelection;
