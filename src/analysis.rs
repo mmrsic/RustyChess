@@ -10,7 +10,7 @@ use crate::pieces::*;
 impl ChessGame {
     /** All possible moves a given piece can currently make in this [ChessGame]. */
     pub fn possible_moves(&self, piece: &Piece) -> Vec<Move> {
-        self.deltas(piece)
+        self.possible_targets(piece)
             .iter()
             .map(|target| Move {
                 piece: piece.clone(),
@@ -20,7 +20,8 @@ impl ChessGame {
             .collect()
     }
 
-    fn deltas(&self, piece: &Piece) -> Vec<&BoardSquare> {
+    /** All possible target squares of a given piece. */
+    fn possible_targets(&self, piece: &Piece) -> Vec<&BoardSquare> {
         let mut result = Vec::new();
         piece_deltas(piece).iter().for_each(|piece_delta| {
             let mut distance = 1;
@@ -55,9 +56,9 @@ impl ChessGame {
             .filter(|(_, piece)| piece.is_some())
             .map(|(_, piece)| piece.unwrap())
             .filter(|piece| {
-                piece_deltas(&piece).iter().any(|&piece_delta| {
-                    piece_delta.delta.add(piece.square.position()) == square.position()
-                })
+                self.possible_targets(&piece)
+                    .iter()
+                    .any(|&target| target.position() == square.position())
             })
             .collect();
         result
@@ -65,9 +66,16 @@ impl ChessGame {
 
     /** Mapping from [Direction] to [Piece] which is reachable by any piece from a given [BoardSquare]. */
     pub fn square_context(&self, square: &BoardSquare) -> HashMap<Direction, Option<Piece>> {
+        let repeatable_directions = Direction::adjacent();
         let mut result: HashMap<Direction, Option<Piece>> = HashMap::new();
         Direction::all().iter().for_each(|direction| {
-            let coord = square.position().add(direction.delta());
+            let mut coord = square.position().add(direction.delta());
+            while self.board.square_at(coord).is_some()
+                && self.piece_at(coord).is_none()
+                && repeatable_directions.contains(direction)
+            {
+                coord = coord.add(direction.delta())
+            }
             result.insert(direction.clone(), self.piece_at(coord).cloned());
         });
         return result;
