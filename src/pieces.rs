@@ -54,6 +54,7 @@ impl PieceDelta {
 pub fn piece_deltas(piece: &Piece) -> Vec<PieceDelta> {
     return match piece.piece_type {
         PieceType::King => king_move_deltas(),
+        PieceType::Queen => queen_move_deltas(),
         PieceType::Rook => rook_move_deltas(),
         PieceType::Bishop => bishop_move_deltas(),
         PieceType::Knight => knight_move_deltas(),
@@ -65,6 +66,13 @@ fn king_move_deltas() -> Vec<PieceDelta> {
     Direction::adjacent()
         .iter()
         .map(|dir| PieceDelta::new(dir.delta(), 1))
+        .collect()
+}
+
+fn queen_move_deltas() -> Vec<PieceDelta> {
+    Direction::adjacent()
+        .iter()
+        .map(|dir| PieceDelta::new(dir.delta(), 7))
         .collect()
 }
 

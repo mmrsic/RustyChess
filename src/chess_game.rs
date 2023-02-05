@@ -62,6 +62,7 @@ fn create_start_positions() -> Vec<Piece> {
     let mut result = Vec::new();
     for color in [PieceColor::White, PieceColor::Black] {
         result.push(create_king_start(color));
+        result.push(create_queen_start(color));
         create_knights_start(color)
             .iter()
             .for_each(|knight| result.push(knight.clone()));
@@ -81,6 +82,14 @@ fn create_king_start(color: PieceColor) -> Piece {
         PieceColor::Black => '8',
     };
     Piece::new(PieceType::King, color, BoardSquare::new(row, 'e'))
+}
+
+fn create_queen_start(color: PieceColor) -> Piece {
+    let row = match color {
+        PieceColor::White => '1',
+        PieceColor::Black => '8',
+    };
+    Piece::new(PieceType::Queen, color, BoardSquare::new(row, 'd'))
 }
 
 fn create_knights_start(color: PieceColor) -> Vec<Piece> {
