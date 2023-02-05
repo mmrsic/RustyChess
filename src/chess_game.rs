@@ -67,7 +67,10 @@ fn create_start_positions() -> Vec<Piece> {
             .for_each(|knight| result.push(knight.clone()));
         create_rooks_start(color)
             .iter()
-            .for_each(|rook| result.push(rook.clone()))
+            .for_each(|rook| result.push(rook.clone()));
+        create_bishops_start(color)
+            .iter()
+            .for_each(|bishop| result.push(bishop.clone()))
     }
     return result;
 }
@@ -99,5 +102,16 @@ fn create_rooks_start(color: PieceColor) -> Vec<Piece> {
     vec![
         Piece::new(PieceType::Rook, color, BoardSquare::new(row, 'a')),
         Piece::new(PieceType::Rook, color, BoardSquare::new(row, 'h')),
+    ]
+}
+
+fn create_bishops_start(color: PieceColor) -> Vec<Piece> {
+    let row = match color {
+        PieceColor::White => '1',
+        PieceColor::Black => '8',
+    };
+    vec![
+        Piece::new(PieceType::Bishop, color, BoardSquare::new(row, 'c')),
+        Piece::new(PieceType::Bishop, color, BoardSquare::new(row, 'f')),
     ]
 }
