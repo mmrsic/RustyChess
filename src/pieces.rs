@@ -1,6 +1,7 @@
 use bracket_lib::prelude::Point;
 
 use crate::chessboard::BoardSquare;
+use crate::move_rules::Direction;
 
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub enum PieceType {
@@ -35,35 +36,56 @@ impl Piece {
     }
 }
 
-pub fn piece_deltas(piece: &Piece) -> Vec<Point> {
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
+pub struct PieceDelta {
+    pub delta: Point,
+    pub max_distance: i8,
+}
+
+impl PieceDelta {
+    pub fn new(delta: Point, max_distance: i8) -> Self {
+        Self {
+            delta,
+            max_distance,
+        }
+    }
+}
+
+pub fn piece_deltas(piece: &Piece) -> Vec<PieceDelta> {
     return match piece.piece_type {
         PieceType::King => king_move_deltas(),
+        PieceType::Rook => rook_move_deltas(),
         PieceType::Knight => knight_move_deltas(),
         _ => Vec::new(),
     };
 }
 
-fn king_move_deltas() -> Vec<Point> {
-    let mut deltas = Vec::new();
-    for delta_x in -1..=1 {
-        for delta_y in -1..=1 {
-            if delta_x != 0 || delta_y != 0 {
-                deltas.push(Point::new(delta_x, delta_y));
-            }
-        }
-    }
-    deltas
+fn king_move_deltas() -> Vec<PieceDelta> {
+    Direction::adjacent()
+        .iter()
+        .map(|dir| PieceDelta::new(dir.delta(), 1))
+        .collect()
 }
 
-fn knight_move_deltas() -> Vec<Point> {
-    vec![
-        Point::new(-1, -2),
-        Point::new(1, -2),
-        Point::new(2, -1),
-        Point::new(2, 1),
-        Point::new(1, 2),
-        Point::new(-1, 2),
-        Point::new(-2, 1),
-        Point::new(-2, -1),
+fn rook_move_deltas() -> Vec<PieceDelta> {
+    Direction::rank_or_file()
+        .iter()
+        .map(|dir| PieceDelta::new(dir.delta(), 7))
+        .collect()
+}
+
+fn knight_move_deltas() -> Vec<PieceDelta> {
+    [
+        Direction::NNW,
+        Direction::NNE,
+        Direction::NEE,
+        Direction::SEE,
+        Direction::SSE,
+        Direction::SSW,
+        Direction::SWW,
+        Direction::NWW,
     ]
+    .iter()
+    .map(|dir| PieceDelta::new(dir.delta(), 1))
+    .collect()
 }

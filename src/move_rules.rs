@@ -109,6 +109,18 @@ impl Direction {
             Direction::NNW,
         ]
     }
+    pub fn rank_or_file() -> Vec<Direction> {
+        vec![Direction::N, Direction::E, Direction::S, Direction::W]
+    }
+    pub fn diagonally() -> Vec<Direction> {
+        vec![Direction::NE, Direction::SE, Direction::SW, Direction::NW]
+    }
+    pub fn adjacent() -> Vec<Direction> {
+        let mut result = Direction::rank_or_file();
+        let mut additional = Direction::diagonally();
+        result.append(&mut additional);
+        result
+    }
 
     pub fn delta(&self) -> Point {
         match self {

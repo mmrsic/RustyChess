@@ -56,12 +56,6 @@ impl ChessGame {
             .iter()
             .any(|chess_move| chess_move.piece.color != color)
     }
-
-    /** Whether a given piece color is allowed to move on a given target square. */
-    pub fn is_target_allowed_for_color(&self, color: PieceColor, target: &BoardSquare) -> bool {
-        let target_piece = self.piece_at(target.position());
-        target_piece == None || target_piece.unwrap().color != color
-    }
 }
 
 fn create_start_positions() -> Vec<Piece> {
@@ -70,7 +64,10 @@ fn create_start_positions() -> Vec<Piece> {
         result.push(create_king_start(color));
         create_knights_start(color)
             .iter()
-            .for_each(|knight| result.push(knight.clone()))
+            .for_each(|knight| result.push(knight.clone()));
+        create_rooks_start(color)
+            .iter()
+            .for_each(|rook| result.push(rook.clone()))
     }
     return result;
 }
@@ -91,5 +88,16 @@ fn create_knights_start(color: PieceColor) -> Vec<Piece> {
     vec![
         Piece::new(PieceType::Knight, color, BoardSquare::new(row, 'b')),
         Piece::new(PieceType::Knight, color, BoardSquare::new(row, 'g')),
+    ]
+}
+
+fn create_rooks_start(color: PieceColor) -> Vec<Piece> {
+    let row = match color {
+        PieceColor::White => '1',
+        PieceColor::Black => '8',
+    };
+    vec![
+        Piece::new(PieceType::Rook, color, BoardSquare::new(row, 'a')),
+        Piece::new(PieceType::Rook, color, BoardSquare::new(row, 'h')),
     ]
 }
