@@ -44,13 +44,9 @@ impl MainState {
             }
             AppState::AwaitingMoveSelection { user_move } => {
                 if let Some(selected_target) = self.game.board.square_at(coord) {
-                    if let Some(chosen_move) = user_move
-                        .possible_moves
-                        .iter()
-                        .find(|possible_move| possible_move.target == *selected_target)
-                    {
+                    if let Some(chosen_move) = user_move.move_to_target(*selected_target) {
                         self.game.execute_move(chosen_move);
-                        println!("Executed: {:?}", chosen_move)
+                        println!("Executed: {:?}", chosen_move);
                     }
                 }
                 self.app_state = AppState::AwaitingPieceSelection;
@@ -70,7 +66,9 @@ impl GameState for MainState {
         render_board(&self.game.board, ctx);
         render_pieces(&self.game.pieces, ctx);
         render_chess(&self.game, ctx);
+        render_executed_moves(&self.game, ctx);
 
+        set_active_console_pieces(ctx);
         INPUT.lock().for_each_message(|m| match m {
             BEvent::MouseButtonDown { button: 0 } => self.evaluate_mouse_click(ctx.mouse_point()),
             BEvent::CloseRequested { .. } => ctx.quit(),

@@ -8,10 +8,6 @@ use crate::pieces::*;
 pub const TILE_WIDTH: i32 = 64;
 pub const TILE_HEIGHT: i32 = 64;
 
-const CONSOLE_BOARD: usize = 0;
-const CONSOLE_PIECES: usize = 1;
-const CONSOLE_TEXTS: usize = 2;
-
 const GRAPHICS_WIDTH: i32 = 12;
 const GRAPHICS_HEIGHT: i32 = 8;
 const FONT_WIDTH_FACTOR: i32 = 8;
@@ -51,7 +47,7 @@ pub fn create_gui() -> BTerm {
 
 /** Render a given [Chessboard] onto a given [BTerm]. */
 pub fn render_board(board: &Chessboard, ctx: &mut BTerm) {
-    ctx.set_active_console(CONSOLE_BOARD);
+    set_active_console_board(ctx);
     ctx.cls();
     for square in board.squares() {
         ctx.set(
@@ -66,7 +62,7 @@ pub fn render_board(board: &Chessboard, ctx: &mut BTerm) {
 
 /** Render a collection of pieces onto a given [BTerm]. */
 pub fn render_pieces(pieces: &Vec<Piece>, ctx: &mut BTerm) {
-    ctx.set_active_console(CONSOLE_PIECES);
+    set_active_console_pieces(ctx);
     ctx.cls();
     for piece in pieces {
         render_piece(&piece, ctx);
@@ -75,7 +71,7 @@ pub fn render_pieces(pieces: &Vec<Piece>, ctx: &mut BTerm) {
 
 /** Render a single given [Piece] onto a given [BTerm]. */
 pub fn render_piece(piece: &Piece, ctx: &mut BTerm) {
-    ctx.set_active_console(CONSOLE_PIECES);
+    set_active_console_pieces(ctx);
     ctx.set(
         piece.square.x(),
         piece.square.y(),
@@ -90,6 +86,14 @@ pub fn render_piece(piece: &Piece, ctx: &mut BTerm) {
             PieceType::Pawn => PAWN_OFFSET,
         },
     );
+}
+
+pub fn set_active_console_pieces(ctx: &mut BTerm) {
+    ctx.set_active_console(1);
+}
+
+fn set_active_console_board(ctx: &mut BTerm) {
+    ctx.set_active_console(0);
 }
 
 fn to_square_ui_color(piece_color: SquareColor) -> (u8, u8, u8) {
@@ -107,7 +111,7 @@ fn to_piece_ui_color(piece_color: PieceColor) -> (u8, u8, u8) {
 }
 
 pub fn render_possible_moves(possible_moves: Vec<Move>, ctx: &mut BTerm) {
-    ctx.set_active_console(CONSOLE_BOARD);
+    set_active_console_board(ctx);
     possible_moves.iter().for_each(|possible_move| {
         let target_square = possible_move.target;
         ctx.set(
@@ -121,11 +125,11 @@ pub fn render_possible_moves(possible_moves: Vec<Move>, ctx: &mut BTerm) {
 }
 
 pub fn render_chess(game: &ChessGame, ctx: &mut BTerm) {
-    ctx.set_active_console(CONSOLE_TEXTS);
+    set_active_console_texts(ctx);
     ctx.cls();
     let chess_moves = game.chess();
     if !chess_moves.is_empty() {
-        ctx.set_active_console(CONSOLE_BOARD);
+        set_active_console_board(ctx);
         let chess_square = chess_moves.iter().nth(0).unwrap().target;
         ctx.set(
             chess_square.x(),
@@ -134,8 +138,24 @@ pub fn render_chess(game: &ChessGame, ctx: &mut BTerm) {
             to_square_ui_color(chess_square.color()),
             to_cp437(CHESS_CODE),
         );
-        ctx.set_active_console(CONSOLE_TEXTS);
-        ctx.print(TEXT_LEFT_START, 1, "Chess");
     }
-    ctx.set_active_console(CONSOLE_PIECES);
+}
+
+fn set_active_console_texts(ctx: &mut BTerm) {
+    ctx.set_active_console(2)
+}
+
+pub fn render_executed_moves(game: &ChessGame, ctx: &mut BTerm) {
+    set_active_console_texts(ctx);
+    let mut row = 1;
+    game.executed_moves().iter().for_each(|executed_move| {
+        let move_number = (row - 1) / 2 + 1;
+        let column_offset = 1 - row % 2;
+        let string = match column_offset == 0 {
+            true => format!("{}. {}", move_number, executed_move.coord_notation()),
+            false => executed_move.coord_notation(),
+        };
+        ctx.print(TEXT_LEFT_START + column_offset * 10, move_number, string);
+        row += 1;
+    });
 }

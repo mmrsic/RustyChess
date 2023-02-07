@@ -1,3 +1,4 @@
+use crate::chessboard::BoardSquare;
 use crate::move_rules::Move;
 use crate::pieces::Piece;
 
@@ -13,5 +14,10 @@ impl UserMove {
             piece,
             possible_moves,
         }
+    }
+    pub fn move_to_target(&self, target: BoardSquare) -> Option<&Move> {
+        self.possible_moves
+            .iter()
+            .find(|possible_move| possible_move.target == target)
     }
 }

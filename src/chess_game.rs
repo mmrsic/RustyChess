@@ -5,9 +5,45 @@ use crate::move_rules::*;
 use crate::pieces::*;
 
 #[derive(Clone, Debug)]
+pub struct ExecutedMove {
+    pub piece: Piece,
+    pub start_square: BoardSquare,
+    pub target_square: BoardSquare,
+}
+
+impl ExecutedMove {
+    fn new(piece: Piece, start_square: BoardSquare, target_square: BoardSquare) -> Self {
+        Self {
+            piece,
+            start_square,
+            target_square,
+        }
+    }
+    fn new_from(source_move: &Move) -> Self {
+        Self::new(
+            source_move.piece,
+            source_move.piece.square,
+            source_move.target,
+        )
+    }
+    pub(crate) fn coord_notation(&self) -> String {
+        let start = self.start_square;
+        let target = self.target_square;
+        format!(
+            "{}{}-{}{}",
+            start.file().to_uppercase(),
+            start.rank(),
+            target.file().to_uppercase(),
+            target.rank()
+        )
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct ChessGame {
     pub board: Chessboard,
     pub pieces: Vec<Piece>,
+    executed_moves: Vec<ExecutedMove>,
 }
 
 impl ChessGame {
@@ -16,6 +52,7 @@ impl ChessGame {
         Self {
             board: Chessboard::new(),
             pieces: create_start_positions(),
+            executed_moves: vec![],
         }
     }
 
@@ -28,11 +65,17 @@ impl ChessGame {
 
     /** Execute a given move in this game. No checks are made whether this is an allowed move. */
     pub fn execute_move(&mut self, chosen_move: &Move) {
+        let executed_move = ExecutedMove::new_from(chosen_move);
         if let Some(target_piece) = self.piece_at(chosen_move.target.position()) {
             CapturingMove::new(chosen_move.piece.clone(), target_piece.clone()).execute(self);
         } else {
             Move::new(chosen_move.piece.clone(), chosen_move.target).execute(self);
         }
+        self.executed_moves.push(executed_move);
+    }
+
+    pub fn executed_moves(&self) -> Vec<ExecutedMove> {
+        self.executed_moves.clone()
     }
 
     /** A collection of all [Move]s which denote a chess in the current game. */
