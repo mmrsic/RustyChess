@@ -9,32 +9,44 @@ pub struct ExecutedMove {
     pub piece: Piece,
     pub start_square: BoardSquare,
     pub target_square: BoardSquare,
+    pub is_chess: bool,
 }
 
 impl ExecutedMove {
-    fn new(piece: Piece, start_square: BoardSquare, target_square: BoardSquare) -> Self {
+    fn new(
+        piece: Piece,
+        start_square: BoardSquare,
+        target_square: BoardSquare,
+        is_chess: bool,
+    ) -> Self {
         Self {
             piece,
             start_square,
             target_square,
+            is_chess,
         }
     }
-    fn new_from(source_move: &Move) -> Self {
+    fn new_from(source_move: &Move, is_chess: bool) -> Self {
         Self::new(
             source_move.piece,
             source_move.piece.square,
             source_move.target,
+            is_chess,
         )
     }
     pub(crate) fn coord_notation(&self) -> String {
         let start = self.start_square;
         let target = self.target_square;
         format!(
-            "{}{}-{}{}",
+            "{}{}-{}{}{}",
             start.file().to_uppercase(),
             start.rank(),
             target.file().to_uppercase(),
-            target.rank()
+            target.rank(),
+            match self.is_chess {
+                true => "+",
+                false => "",
+            },
         )
     }
 }
@@ -65,12 +77,12 @@ impl ChessGame {
 
     /** Execute a given move in this game. No checks are made whether this is an allowed move. */
     pub fn execute_move(&mut self, chosen_move: &Move) {
-        let executed_move = ExecutedMove::new_from(chosen_move);
         if let Some(target_piece) = self.piece_at(chosen_move.target.position()) {
             CapturingMove::new(chosen_move.piece.clone(), target_piece.clone()).execute(self);
         } else {
             Move::new(chosen_move.piece.clone(), chosen_move.target).execute(self);
         }
+        let executed_move = ExecutedMove::new_from(chosen_move, self.is_chess());
         self.executed_moves.push(executed_move);
     }
 
@@ -98,6 +110,13 @@ impl ChessGame {
         self.chess()
             .iter()
             .any(|chess_move| chess_move.piece.color != color)
+    }
+
+    /** Whether any of the kings of this game is currently in chess. */
+    pub fn is_chess(&self) -> bool {
+        [PieceColor::White, PieceColor::Black]
+            .iter()
+            .any(|color| self.is_chess_color(*color))
     }
 }
 

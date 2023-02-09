@@ -46,7 +46,7 @@ impl MainState {
                 if let Some(selected_target) = self.game.board.square_at(coord) {
                     if let Some(chosen_move) = user_move.move_to_target(*selected_target) {
                         self.game.execute_move(chosen_move);
-                        println!("Executed: {:?}", chosen_move);
+                        println!("{:?}", self.game.executed_moves().last().unwrap());
                     }
                 }
                 self.app_state = AppState::AwaitingPieceSelection;
