@@ -9,6 +9,7 @@ pub struct ExecutedMove {
     pub piece: Piece,
     pub start_square: BoardSquare,
     pub target_square: BoardSquare,
+    pub is_capture: bool,
     pub is_chess: bool,
 }
 
@@ -17,20 +18,23 @@ impl ExecutedMove {
         piece: Piece,
         start_square: BoardSquare,
         target_square: BoardSquare,
+        is_capture: bool,
         is_chess: bool,
     ) -> Self {
         Self {
             piece,
             start_square,
             target_square,
+            is_capture,
             is_chess,
         }
     }
-    fn new_from(source_move: &Move, is_chess: bool) -> Self {
+    fn new_from(source_move: &Move, is_capture: bool, is_chess: bool) -> Self {
         Self::new(
             source_move.piece,
             source_move.piece.square,
             source_move.target,
+            is_capture,
             is_chess,
         )
     }
@@ -38,9 +42,10 @@ impl ExecutedMove {
         let start = self.start_square;
         let target = self.target_square;
         format!(
-            "{}{}-{}{}{}",
+            "{}{}{}{}{}{}",
             start.file().to_uppercase(),
             start.rank(),
+            if self.is_capture { 'x' } else { '-' },
             target.file().to_uppercase(),
             target.rank(),
             match self.is_chess {
@@ -77,12 +82,14 @@ impl ChessGame {
 
     /** Execute a given move in this game. No checks are made whether this is an allowed move. */
     pub fn execute_move(&mut self, chosen_move: &Move) {
+        let mut capture = false;
         if let Some(target_piece) = self.piece_at(chosen_move.target.position()) {
             CapturingMove::new(chosen_move.piece.clone(), target_piece.clone()).execute(self);
+            capture = true;
         } else {
             Move::new(chosen_move.piece.clone(), chosen_move.target).execute(self);
         }
-        let executed_move = ExecutedMove::new_from(chosen_move, self.is_chess());
+        let executed_move = ExecutedMove::new_from(chosen_move, capture, self.is_chess());
         self.executed_moves.push(executed_move);
     }
 
