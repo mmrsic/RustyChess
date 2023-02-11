@@ -61,12 +61,48 @@ pub struct EnPassantMove {
     pub target: BoardSquare,
 }
 
+ */
+
 pub struct CastlingMove {
     pub king: Piece,
     pub rook: Piece,
 }
 
-*/
+impl CastlingMove {
+    pub fn new(king: Piece, rook: Piece) -> Self {
+        Self { king, rook }
+    }
+    /** Whether this castling move is taking place at the King's side. */
+    pub fn is_kingside(&self) -> bool {
+        self.king.square.x() < self.rook.square.x()
+    }
+}
+
+impl ChessGameMove for CastlingMove {
+    fn execute(&self, game: &mut ChessGame) {
+        let is_kingside = self.is_kingside();
+        let king_delta = match is_kingside {
+            true => Point::new(2, 0),
+            false => Point::new(-2, 0),
+        };
+        let king_square = self.king.square;
+        let king_target = game
+            .board
+            .get_square_relative(king_square, &king_delta)
+            .expect(format!("King's castling move square is missing: {:?}", king_square).as_str());
+        Move::new(self.king, *king_target).execute(game);
+        let rook_delta = match is_kingside {
+            true => Point::new(-2, 0),
+            false => Point::new(3, 0),
+        };
+        let rook_square = self.rook.square;
+        let rook_target = game
+            .board
+            .get_square_relative(rook_square, &rook_delta)
+            .expect(format!("Rook's castling move square is missing: {:?}", rook_square).as_str());
+        Move::new(self.rook, *rook_target).execute(game);
+    }
+}
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub enum Direction {

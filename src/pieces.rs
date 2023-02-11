@@ -24,6 +24,7 @@ pub struct Piece {
     pub piece_type: PieceType,
     pub color: PieceColor,
     pub square: BoardSquare,
+    start_square: BoardSquare,
 }
 
 impl Piece {
@@ -32,7 +33,12 @@ impl Piece {
             piece_type,
             color,
             square: position,
+            start_square: position,
         }
+    }
+    /** The square a given piece started the game. */
+    pub fn start_square(&self) -> BoardSquare {
+        self.start_square
     }
 }
 

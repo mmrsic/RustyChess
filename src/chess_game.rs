@@ -1,4 +1,5 @@
 use bracket_lib::geometry::Point;
+use std::ops::Sub;
 
 use crate::chessboard::*;
 use crate::move_rules::*;
@@ -38,9 +39,23 @@ impl ExecutedMove {
             is_chess,
         )
     }
-    pub(crate) fn coord_notation(&self) -> String {
+    /** Whether this executed move represents a castling. */
+    pub fn is_castling(&self) -> bool {
+        self.piece.piece_type == PieceType::King
+            && (self.start_square.x() - self.target_square.x()).abs() > 1
+    }
+
+    /** This move's coordinate notation string. Includes, chess, capture, and castling. */
+    pub fn coord_notation(&self) -> String {
         let start = self.start_square;
         let target = self.target_square;
+        if self.is_castling() {
+            return match target.file().as_str() {
+                "g" => "0-0",
+                _ => "0-0-0",
+            }
+            .to_string();
+        }
         format!(
             "{}{}{}{}{}{}",
             start.file().to_uppercase(),
@@ -73,7 +88,7 @@ impl ChessGame {
         }
     }
 
-    /** The optional piece at a given coordinate. */
+    /** The optional piece at a given coordinate. Values range from 0 to 7. */
     pub fn piece_at(&self, coord: Point) -> Option<&Piece> {
         self.pieces
             .iter()
@@ -86,6 +101,8 @@ impl ChessGame {
         if let Some(target_piece) = self.piece_at(chosen_move.target.position()) {
             CapturingMove::new(chosen_move.piece.clone(), target_piece.clone()).execute(self);
             capture = true;
+        } else if let Some(rook) = self.castling_rook(chosen_move) {
+            CastlingMove::new(chosen_move.piece, *rook).execute(self)
         } else {
             Move::new(chosen_move.piece.clone(), chosen_move.target).execute(self);
         }
@@ -97,6 +114,13 @@ impl ChessGame {
         self.executed_moves.clone()
     }
 
+    /** Whether a given piece has already moved in this game. */
+    pub fn has_already_moved(&self, piece: &Piece) -> bool {
+        self.executed_moves()
+            .iter()
+            .any(|executed_move| executed_move.start_square == piece.start_square())
+    }
+
     /** A collection of all [Move]s which denote a chess in the current game. */
     pub fn chess(&self) -> Vec<Move> {
         let mut result = Vec::new();
@@ -104,7 +128,7 @@ impl ChessGame {
             .iter()
             .filter(|p| p.piece_type == PieceType::King)
             .for_each(|king| {
-                self.square_contesters(&king.square)
+                self.square_challengers(&king.square)
                     .iter()
                     .filter(|candidate| candidate.color != king.color)
                     .for_each(|chess_piece| result.push(Move::new(*chess_piece, king.square)))
@@ -124,6 +148,22 @@ impl ChessGame {
         [PieceColor::White, PieceColor::Black]
             .iter()
             .any(|color| self.is_chess_color(*color))
+    }
+
+    /** The optional castling rook for a given move. Only present for Kings. */
+    pub fn castling_rook(&self, a_move: &Move) -> Option<&Piece> {
+        if a_move.piece.piece_type != PieceType::King {
+            return None;
+        }
+        let king_pos = a_move.piece.square.position();
+        let king_delta = king_pos.sub(a_move.target.position());
+        if king_delta.x.abs() < 2 {
+            return None;
+        }
+        return match a_move.target.file().as_str() {
+            "g" => self.piece_at(Point::new(7, a_move.target.y())),
+            _ => self.piece_at(Point::new(0, a_move.target.y())),
+        };
     }
 }
 

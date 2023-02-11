@@ -67,6 +67,7 @@ impl BoardSquare {
         Self { row, column }
     }
 
+    /** x position of this square. Depending on the column, e.g. column 'a' is x=0. */
     pub fn x(&self) -> i8 {
         return match self.column {
             'a' => 0,

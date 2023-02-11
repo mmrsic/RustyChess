@@ -38,8 +38,8 @@ impl MainState {
                         user_move: UserMove::new(selected_piece.clone(), possible_moves),
                     };
                 } else if let Some(square) = self.game.board.square_at(coord) {
-                    let contesters = self.game.square_contesters(square);
-                    println!("Contesters for {}: {:?}", square, contesters);
+                    let challengers = self.game.square_challengers(square);
+                    println!("Challengers for {}: {:?}", square, challengers);
                 }
             }
             AppState::AwaitingMoveSelection { user_move } => {
