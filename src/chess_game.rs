@@ -1,5 +1,6 @@
-use bracket_lib::geometry::Point;
 use std::ops::Sub;
+
+use bracket_lib::geometry::Point;
 
 use crate::chessboard::*;
 use crate::move_rules::*;
@@ -41,8 +42,7 @@ impl ExecutedMove {
     }
     /** Whether this executed move represents a castling. */
     pub fn is_castling(&self) -> bool {
-        self.piece.piece_type == PieceType::King
-            && (self.start_square.x() - self.target_square.x()).abs() > 1
+        is_castling_move(&self.piece, &self.start_square, &self.target_square)
     }
 
     /** This move's coordinate notation string. Includes, chess, capture, and castling. */
@@ -97,6 +97,9 @@ impl ChessGame {
 
     /** Execute a given move in this game. No checks are made whether this is an allowed move. */
     pub fn execute_move(&mut self, chosen_move: &Move) {
+        if chosen_move.piece.square == chosen_move.target {
+            return;
+        }
         let mut capture = false;
         if let Some(target_piece) = self.piece_at(chosen_move.target.position()) {
             CapturingMove::new(chosen_move.piece.clone(), target_piece.clone()).execute(self);

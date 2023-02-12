@@ -17,7 +17,18 @@ impl ChessGame {
                 piece: piece.clone(),
                 target: *target,
             })
-            .filter(|chess_move| !self.calculate_move(chess_move).is_chess_color(piece.color))
+            .filter(|chess_move| !self.is_chess_after_move(chess_move))
+            .filter(|chess_move| {
+                !is_castling_move(
+                    &chess_move.piece,
+                    &chess_move.piece.square,
+                    &chess_move.target,
+                ) || self
+                    .board
+                    .all_squares_between(chess_move.piece.square, chess_move.target)
+                    .iter()
+                    .all(|square| !self.is_chess_after_move(&Move::new(*piece, *square)))
+            })
             .collect()
     }
 
@@ -80,8 +91,7 @@ impl ChessGame {
 
     /** All [Piece]s able to move to a given target square. */
     pub fn square_challengers(&self, square: &BoardSquare) -> Vec<Piece> {
-        let result = self
-            .square_context(square)
+        self.square_context(square)
             .iter()
             .filter_map(|(_, piece)| *piece)
             .filter(|piece| {
@@ -89,8 +99,7 @@ impl ChessGame {
                     .iter()
                     .any(|&target| target.position() == square.position())
             })
-            .collect();
-        result
+            .collect()
     }
 
     /** Mapping from [Direction] to [Piece] which is reachable by any piece from a given [BoardSquare]. */
@@ -121,5 +130,11 @@ impl ChessGame {
         let mut result = self.clone();
         result.execute_move(&chess_move);
         result
+    }
+
+    /** Check whether a given move when executed leaves the moving piece color in chess. */
+    fn is_chess_after_move(&self, chess_move: &Move) -> bool {
+        self.calculate_move(chess_move)
+            .is_chess_color(chess_move.piece.color)
     }
 }

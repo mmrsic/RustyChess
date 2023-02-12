@@ -2,7 +2,7 @@ use bracket_lib::prelude::Point;
 
 use crate::chess_game::ChessGame;
 use crate::chessboard::BoardSquare;
-use crate::pieces::Piece;
+use crate::pieces::{Piece, PieceType};
 
 /** A trait which denotes a single move within a game of Chess. */
 pub trait ChessGameMove {
@@ -178,4 +178,11 @@ impl Direction {
             Direction::SWW => Point::new(-2, 1),
         }
     }
+}
+
+/** Whether a given piece (including start square) and a given move target square denote a castling
+move. This is the case if the piece is a King and the square's files/x-positions differ with more
+than one.*/
+pub fn is_castling_move(piece: &Piece, start: &BoardSquare, target: &BoardSquare) -> bool {
+    piece.piece_type == PieceType::King && (start.x() - target.x()).abs() > 1
 }

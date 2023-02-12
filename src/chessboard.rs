@@ -1,3 +1,4 @@
+use std::cmp::{max, min};
 use std::fmt::{Display, Formatter};
 
 use bracket_lib::prelude::Point;
@@ -35,6 +36,17 @@ impl Chessboard {
             .iter()
             .find(|s| s.x() == (coord.x as i8) && s.y() == (coord.y as i8))
     }
+    /** All squares between two given squares of equal ranks or files - including them.
+    Empty if the specified squares are neither on the same rank nor on the same file. */
+    pub fn all_squares_between(&self, sq1: BoardSquare, sq2: BoardSquare) -> Vec<BoardSquare> {
+        let mut result = Vec::new();
+        if sq1.y() == sq2.y() {
+            for x_i in min(sq1.x(), sq2.x())..=max(sq1.x(), sq2.x()) {
+                result.push(*self.square_at(Point::new(x_i, sq1.y())).unwrap())
+            }
+        }
+        result
+    }
     /** Get a square positioned relatively to a given square. */
     pub fn get_square_relative(&self, square: BoardSquare, delta: &Point) -> Option<&BoardSquare> {
         return self.square_at(square.position() + *delta);
@@ -44,7 +56,6 @@ impl Chessboard {
 /** A single chessboard square, assigned to a row/column combination. */
 #[derive(Copy, Clone, Debug, Eq, Hash)]
 pub struct BoardSquare {
-    /** The row of this square, i.e. one of the values '1' through '8'. */
     row: char,
     column: char,
 }
@@ -63,7 +74,7 @@ impl Display for BoardSquare {
 }
 
 impl BoardSquare {
-    pub(crate) fn new(row: char, column: char) -> Self {
+    pub fn new(row: char, column: char) -> Self {
         Self { row, column }
     }
 
