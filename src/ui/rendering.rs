@@ -1,9 +1,9 @@
 use bracket_lib::prelude::*;
 
-use crate::chess_game::ChessGame;
-use crate::chessboard::*;
-use crate::move_rules::*;
-use crate::pieces::*;
+use crate::domain::chessboard::*;
+use crate::domain::game::*;
+use crate::domain::pieces::*;
+use crate::*;
 
 pub const TILE_WIDTH: i32 = 64;
 pub const TILE_HEIGHT: i32 = 64;
@@ -21,8 +21,9 @@ const POSSIBLE_MOVE_CODE: char = '\u{2591}';
 const CHESS_CODE: char = '\u{2591}';
 const BACKGROUND: (u8, u8, u8) = LIGHT_GREEN;
 
+const CHESS_PIECES_FILE: &'static str = "chess_pieces.png";
 const TEXT_FILE: &'static str = "terminal8x8.png";
-const CHESS_PIECES_FILE: &'static str = "chesspieces.png";
+
 const KING_OFFSET: i32 = 0;
 const QUEEN_OFFSET: i32 = KING_OFFSET + 1;
 const ROOK_OFFSET: i32 = QUEEN_OFFSET + 1;
@@ -34,7 +35,7 @@ pub fn create_gui() -> BTerm {
     BTermBuilder::simple(GRAPHICS_WIDTH, GRAPHICS_HEIGHT)
         .unwrap()
         .with_resource_path("resources")
-        .with_font("chesspieces.png", TILE_WIDTH, TILE_HEIGHT)
+        .with_font(CHESS_PIECES_FILE, TILE_WIDTH, TILE_HEIGHT)
         .with_fps_cap(25.0)
         .with_title("C H E S S")
         .with_tile_dimensions(TILE_WIDTH, TILE_HEIGHT)
@@ -158,4 +159,32 @@ pub fn render_executed_moves(game: &ChessGame, ctx: &mut BTerm) {
         ctx.print(TEXT_LEFT_START + column_offset * 10, move_number, string);
         row += 1;
     });
+}
+
+pub(crate) fn main(main_state: MainState) -> BError {
+    main_loop(create_gui(), main_state)
+}
+
+impl GameState for MainState {
+    fn tick(&mut self, ctx: &mut BTerm) {
+        render_board(&self.game.board, ctx);
+        render_pieces(&self.game.pieces, ctx);
+        render_chess(&self.game, ctx);
+        render_executed_moves(&self.game, ctx);
+
+        set_active_console_pieces(ctx);
+        INPUT.lock().for_each_message(|message| {
+            let mouse_point = ctx.mouse_point();
+            let coord = (mouse_point.x as i8, mouse_point.y as i8);
+            match message {
+                BEvent::MouseButtonDown { button: 0 } => self.evaluate_mouse_click(coord),
+                BEvent::CloseRequested { .. } => ctx.quit(),
+                _ => {}
+            }
+        });
+
+        if let AppState::AwaitingMoveSelection { user_move } = &self.app_state {
+            render_possible_moves(user_move.possible_moves.clone(), ctx);
+        }
+    }
 }

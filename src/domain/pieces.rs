@@ -1,7 +1,4 @@
-use bracket_lib::prelude::Point;
-
-use crate::chessboard::BoardSquare;
-use crate::move_rules::Direction;
+use crate::domain::chessboard::BoardSquare;
 
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub enum PieceType {
@@ -44,12 +41,12 @@ impl Piece {
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
 pub struct PieceDelta {
-    pub delta: Point,
+    pub delta: (i8, i8),
     pub max_distance: i8,
 }
 
 impl PieceDelta {
-    pub fn new(delta: Point, max_distance: i8) -> Self {
+    pub fn new(delta: (i8, i8), max_distance: i8) -> Self {
         Self {
             delta,
             max_distance,
@@ -110,4 +107,80 @@ fn knight_move_deltas() -> Vec<PieceDelta> {
     .iter()
     .map(|dir| PieceDelta::new(dir.delta(), 1))
     .collect()
+}
+
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
+pub enum Direction {
+    N,
+    E,
+    W,
+    S,
+    NE,
+    NW,
+    SE,
+    SW,
+    NNE,
+    NNW,
+    SSE,
+    SSW,
+    NEE,
+    NWW,
+    SEE,
+    SWW,
+}
+
+impl Direction {
+    pub fn all() -> Vec<Direction> {
+        vec![
+            Direction::N,
+            Direction::NNE,
+            Direction::NE,
+            Direction::NEE,
+            Direction::E,
+            Direction::SEE,
+            Direction::SE,
+            Direction::SSE,
+            Direction::S,
+            Direction::SSW,
+            Direction::SW,
+            Direction::SWW,
+            Direction::W,
+            Direction::NWW,
+            Direction::NW,
+            Direction::NNW,
+        ]
+    }
+    pub fn rank_or_file() -> Vec<Direction> {
+        vec![Direction::N, Direction::E, Direction::S, Direction::W]
+    }
+    pub fn diagonally() -> Vec<Direction> {
+        vec![Direction::NE, Direction::SE, Direction::SW, Direction::NW]
+    }
+    pub fn adjacent() -> Vec<Direction> {
+        let mut result = Direction::rank_or_file();
+        let mut additional = Direction::diagonally();
+        result.append(&mut additional);
+        result
+    }
+
+    pub fn delta(&self) -> (i8, i8) {
+        match self {
+            Direction::N => (0, -1),
+            Direction::E => (1, 0),
+            Direction::W => (-1, 0),
+            Direction::S => (0, 1),
+            Direction::NE => (1, -1),
+            Direction::NW => (-1, -1),
+            Direction::SE => (1, 1),
+            Direction::SW => (-1, 1),
+            Direction::NNE => (1, -2),
+            Direction::NNW => (-1, -2),
+            Direction::SSE => (1, 2),
+            Direction::SSW => (-1, 2),
+            Direction::NEE => (2, -1),
+            Direction::NWW => (-2, -1),
+            Direction::SEE => (2, 1),
+            Direction::SWW => (-2, 1),
+        }
+    }
 }

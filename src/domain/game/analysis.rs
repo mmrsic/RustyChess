@@ -1,12 +1,6 @@
 use std::collections::HashMap;
-use std::ops::{Add, Mul};
 
-use bracket_lib::prelude::Point;
-
-use crate::chess_game::ChessGame;
-use crate::chessboard::BoardSquare;
-use crate::move_rules::*;
-use crate::pieces::*;
+use crate::domain::game::*;
 
 impl ChessGame {
     /** All possible moves a given piece can currently make in this [ChessGame]. */
@@ -38,11 +32,11 @@ impl ChessGame {
         piece_deltas(piece).iter().for_each(|piece_delta| {
             let mut distance = 1;
             while distance <= piece_delta.max_distance {
-                let delta_candidate = piece_delta.delta.mul(Point::new(distance, distance));
-                match self
-                    .board
-                    .get_square_relative(piece.square, &delta_candidate)
-                {
+                let coord = (
+                    piece_delta.delta.0 * distance,
+                    piece_delta.delta.1 * distance,
+                );
+                match self.board.square_relative(piece.square, coord) {
                     None => break,
                     Some(target_square) => match self.piece_at(target_square.position()) {
                         None => result.push(*target_square),
@@ -78,11 +72,11 @@ impl ChessGame {
             .filter(|other_piece| other_piece.piece_type == PieceType::Rook)
             .filter(|rook| !self.has_already_moved(rook))
             .for_each(|rook| {
-                let rook_x = rook.square.position().x;
-                let king_x = king.square.position().x;
+                let rook_x = rook.square.position().0;
+                let king_x = king.square.position().0;
                 let factor = if rook_x > king_x { 1 } else { -1 };
-                let delta = Point::new(2 * factor, 0);
-                if let Some(target_square) = self.board.get_square_relative(king.square, &delta) {
+                let delta = (2 * factor, 0);
+                if let Some(target_square) = self.board.square_relative(king.square, delta) {
                     result.push(Move::new(*king, *target_square))
                 }
             });
@@ -114,13 +108,14 @@ impl ChessGame {
 
     /** The closest piece from a given board square into a given direction. */
     fn next_piece_in_direction(&self, square: &BoardSquare, dir: &Direction) -> Option<Piece> {
-        let mut coord = square.position().add(dir.delta());
+        let pos = square.position();
+        let mut coord = (pos.0 + dir.delta().0, pos.1 + dir.delta().1);
         let repeatable_directions = Direction::adjacent();
         while self.board.square_at(coord).is_some()
             && self.piece_at(coord).is_none()
             && repeatable_directions.contains(dir)
         {
-            coord = coord.add(dir.delta())
+            coord = (coord.0 + dir.delta().0, coord.1 + dir.delta().1)
         }
         self.piece_at(coord).cloned()
     }

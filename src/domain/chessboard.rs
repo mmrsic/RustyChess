@@ -1,8 +1,6 @@
 use std::cmp::{max, min};
 use std::fmt::{Display, Formatter};
 
-use bracket_lib::prelude::Point;
-
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum SquareColor {
     White,
@@ -31,10 +29,10 @@ impl Chessboard {
         return self.squares.clone();
     }
     /** The optional square at a given coordinate. None if not valid. */
-    pub fn square_at(&self, coord: Point) -> Option<&BoardSquare> {
+    pub fn square_at(&self, coord: (i8, i8)) -> Option<&BoardSquare> {
         self.squares
             .iter()
-            .find(|s| s.x() == (coord.x as i8) && s.y() == (coord.y as i8))
+            .find(|s| s.x() == coord.0 as i8 && s.y() == coord.1 as i8)
     }
     /** All squares between two given squares of equal ranks or files - including them.
     Empty if the specified squares are neither on the same rank nor on the same file. */
@@ -42,14 +40,14 @@ impl Chessboard {
         let mut result = Vec::new();
         if sq1.y() == sq2.y() {
             for x_i in min(sq1.x(), sq2.x())..=max(sq1.x(), sq2.x()) {
-                result.push(*self.square_at(Point::new(x_i, sq1.y())).unwrap())
+                result.push(*self.square_at((x_i, sq1.y())).unwrap())
             }
         }
         result
     }
     /** Get a square positioned relatively to a given square. */
-    pub fn get_square_relative(&self, square: BoardSquare, delta: &Point) -> Option<&BoardSquare> {
-        return self.square_at(square.position() + *delta);
+    pub fn square_relative(&self, square: BoardSquare, delta: (i8, i8)) -> Option<&BoardSquare> {
+        return self.square_at((square.position().0 + delta.0, square.position().1 + delta.1));
     }
 }
 
@@ -120,8 +118,8 @@ impl BoardSquare {
     pub fn file(&self) -> String {
         return self.column();
     }
-    pub fn position(&self) -> Point {
-        return Point::new(self.x(), self.y());
+    pub fn position(&self) -> (i8, i8) {
+        return (self.x(), self.y());
     }
 
     pub fn color(&self) -> SquareColor {

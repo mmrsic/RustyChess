@@ -1,75 +1,9 @@
-use std::ops::Sub;
+use crate::domain::chessboard::*;
+use crate::domain::game::move_rules::*;
+use crate::domain::pieces::*;
 
-use bracket_lib::geometry::Point;
-
-use crate::chessboard::*;
-use crate::move_rules::*;
-use crate::pieces::*;
-
-#[derive(Clone, Debug)]
-pub struct ExecutedMove {
-    pub piece: Piece,
-    pub start_square: BoardSquare,
-    pub target_square: BoardSquare,
-    pub is_capture: bool,
-    pub is_chess: bool,
-}
-
-impl ExecutedMove {
-    fn new(
-        piece: Piece,
-        start_square: BoardSquare,
-        target_square: BoardSquare,
-        is_capture: bool,
-        is_chess: bool,
-    ) -> Self {
-        Self {
-            piece,
-            start_square,
-            target_square,
-            is_capture,
-            is_chess,
-        }
-    }
-    fn new_from(source_move: &Move, is_capture: bool, is_chess: bool) -> Self {
-        Self::new(
-            source_move.piece,
-            source_move.piece.square,
-            source_move.target,
-            is_capture,
-            is_chess,
-        )
-    }
-    /** Whether this executed move represents a castling. */
-    pub fn is_castling(&self) -> bool {
-        is_castling_move(&self.piece, &self.start_square, &self.target_square)
-    }
-
-    /** This move's coordinate notation string. Includes, chess, capture, and castling. */
-    pub fn coord_notation(&self) -> String {
-        let start = self.start_square;
-        let target = self.target_square;
-        if self.is_castling() {
-            return match target.file().as_str() {
-                "g" => "0-0",
-                _ => "0-0-0",
-            }
-            .to_string();
-        }
-        format!(
-            "{}{}{}{}{}{}",
-            start.file().to_uppercase(),
-            start.rank(),
-            if self.is_capture { 'x' } else { '-' },
-            target.file().to_uppercase(),
-            target.rank(),
-            match self.is_chess {
-                true => "+",
-                false => "",
-            },
-        )
-    }
-}
+mod analysis;
+mod move_rules;
 
 #[derive(Clone, Debug)]
 pub struct ChessGame {
@@ -89,10 +23,10 @@ impl ChessGame {
     }
 
     /** The optional piece at a given coordinate. Values range from 0 to 7. */
-    pub fn piece_at(&self, coord: Point) -> Option<&Piece> {
+    pub fn piece_at(&self, coord: (i8, i8)) -> Option<&Piece> {
         self.pieces
             .iter()
-            .find(|piece| piece.square.x() == coord.x as i8 && piece.square.y() == coord.y as i8)
+            .find(|piece| piece.square.x() == coord.0 as i8 && piece.square.y() == coord.1 as i8)
     }
 
     /** Execute a given move in this game. No checks are made whether this is an allowed move. */
@@ -159,13 +93,14 @@ impl ChessGame {
             return None;
         }
         let king_pos = a_move.piece.square.position();
-        let king_delta = king_pos.sub(a_move.target.position());
-        if king_delta.x.abs() < 2 {
+        let target_pos = a_move.target.position();
+        let king_delta = (king_pos.0 - target_pos.0, king_pos.1 - target_pos.1);
+        if king_delta.0.abs() < 2 {
             return None;
         }
         return match a_move.target.file().as_str() {
-            "g" => self.piece_at(Point::new(7, a_move.target.y())),
-            _ => self.piece_at(Point::new(0, a_move.target.y())),
+            "g" => self.piece_at((7, a_move.target.y())),
+            _ => self.piece_at((0, a_move.target.y())),
         };
     }
 }
@@ -235,4 +170,82 @@ fn create_bishops_start(color: PieceColor) -> Vec<Piece> {
         Piece::new(PieceType::Bishop, color, BoardSquare::new(row, 'c')),
         Piece::new(PieceType::Bishop, color, BoardSquare::new(row, 'f')),
     ]
+}
+
+/** A single potential Chess game move of a piece onto an empty target field. */
+#[derive(Debug, Clone)]
+pub struct Move {
+    pub piece: Piece,
+    pub target: BoardSquare,
+}
+
+impl Move {
+    pub fn new(piece: Piece, target: BoardSquare) -> Self {
+        Self { piece, target }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ExecutedMove {
+    pub piece: Piece,
+    pub start_square: BoardSquare,
+    pub target_square: BoardSquare,
+    pub is_capture: bool,
+    pub is_chess: bool,
+}
+
+impl ExecutedMove {
+    fn new(
+        piece: Piece,
+        start_square: BoardSquare,
+        target_square: BoardSquare,
+        is_capture: bool,
+        is_chess: bool,
+    ) -> Self {
+        Self {
+            piece,
+            start_square,
+            target_square,
+            is_capture,
+            is_chess,
+        }
+    }
+    fn new_from(source_move: &Move, is_capture: bool, is_chess: bool) -> Self {
+        Self::new(
+            source_move.piece,
+            source_move.piece.square,
+            source_move.target,
+            is_capture,
+            is_chess,
+        )
+    }
+    /** Whether this executed move represents a castling. */
+    pub fn is_castling(&self) -> bool {
+        is_castling_move(&self.piece, &self.start_square, &self.target_square)
+    }
+
+    /** This move's coordinate notation string. Includes, chess, capture, and castling. */
+    pub fn coord_notation(&self) -> String {
+        let start = self.start_square;
+        let target = self.target_square;
+        if self.is_castling() {
+            return match target.file().as_str() {
+                "g" => "0-0",
+                _ => "0-0-0",
+            }
+            .to_string();
+        }
+        format!(
+            "{}{}{}{}{}{}",
+            start.file().to_uppercase(),
+            start.rank(),
+            if self.is_capture { 'x' } else { '-' },
+            target.file().to_uppercase(),
+            target.rank(),
+            match self.is_chess {
+                true => "+",
+                false => "",
+            },
+        )
+    }
 }
