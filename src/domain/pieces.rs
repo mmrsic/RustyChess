@@ -37,12 +37,17 @@ impl Piece {
     pub fn start_square(&self) -> BoardSquare {
         self.start_square
     }
+    /** Whether this piece is at it's start square. */
+    pub fn is_at_start(&self) -> bool {
+        self.start_square == self.square
+    }
 }
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
 pub struct PieceDelta {
     pub delta: (i8, i8),
     pub max_distance: i8,
+    pub capture_policy: CapturePolicy,
 }
 
 impl PieceDelta {
@@ -50,7 +55,11 @@ impl PieceDelta {
         Self {
             delta,
             max_distance,
+            capture_policy: CapturePolicy::Allowed,
         }
+    }
+    pub fn may_capture(&self) -> bool {
+        [CapturePolicy::Mandatory, CapturePolicy::Allowed].contains(&self.capture_policy)
     }
 }
 
@@ -61,7 +70,7 @@ pub fn piece_deltas(piece: &Piece) -> Vec<PieceDelta> {
         PieceType::Rook => rook_move_deltas(),
         PieceType::Bishop => bishop_move_deltas(),
         PieceType::Knight => knight_move_deltas(),
-        _ => Vec::new(),
+        PieceType::Pawn => pawn_move_deltas(piece),
     };
 }
 
@@ -107,6 +116,33 @@ fn knight_move_deltas() -> Vec<PieceDelta> {
     .iter()
     .map(|dir| PieceDelta::new(dir.delta(), 1))
     .collect()
+}
+
+fn pawn_move_deltas(pawn: &Piece) -> Vec<PieceDelta> {
+    let mut result = Vec::new();
+    let dir = match pawn.color {
+        PieceColor::White => Direction::N,
+        PieceColor::Black => Direction::S,
+    };
+    let max_dist = if pawn.is_at_start() { 2 } else { 1 };
+    let mut default_delta = PieceDelta::new(dir.delta(), max_dist);
+    default_delta.capture_policy = CapturePolicy::Forbidden;
+    result.push(default_delta);
+    if pawn.square.column() != "a" {
+        let mut left_capture_delta = default_delta.clone();
+        left_capture_delta.delta = (left_capture_delta.delta.0 - 1, left_capture_delta.delta.1);
+        left_capture_delta.capture_policy = CapturePolicy::Mandatory;
+        left_capture_delta.max_distance = 1;
+        result.push(left_capture_delta);
+    }
+    if pawn.square.column() != "h" {
+        let mut right_capture_delta = default_delta.clone();
+        right_capture_delta.delta = (right_capture_delta.delta.0 + 1, right_capture_delta.delta.1);
+        right_capture_delta.capture_policy = CapturePolicy::Mandatory;
+        right_capture_delta.max_distance = 1;
+        result.push(right_capture_delta);
+    }
+    result
 }
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
@@ -183,4 +219,11 @@ impl Direction {
             Direction::SWW => (-2, 1),
         }
     }
+}
+
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
+pub enum CapturePolicy {
+    Mandatory,
+    Allowed,
+    Forbidden,
 }

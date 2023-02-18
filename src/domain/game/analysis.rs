@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::domain::game::*;
+use crate::domain::pieces::CapturePolicy::Mandatory;
 
 impl ChessGame {
     /** All possible moves a given piece can currently make in this [ChessGame]. */
@@ -39,9 +40,17 @@ impl ChessGame {
                 match self.board.square_relative(piece.square, coord) {
                     None => break,
                     Some(target_square) => match self.piece_at(target_square.position()) {
-                        None => result.push(*target_square),
+                        None => {
+                            if piece_delta.capture_policy != Mandatory {
+                                result.push(*target_square)
+                            } else if let Some(en_passant_target) = self.en_passant_target() {
+                                if en_passant_target == target_square {
+                                    result.push(*en_passant_target);
+                                }
+                            }
+                        }
                         Some(other_piece) => {
-                            if other_piece.color != piece.color {
+                            if piece_delta.may_capture() && other_piece.color != piece.color {
                                 result.push(*target_square)
                             }
                             break; // Don't allow pieces to jump over other pieces
@@ -51,8 +60,7 @@ impl ChessGame {
                 distance += 1;
             }
         });
-        let castling_moves = self.possible_castling_moves(piece);
-        castling_moves
+        self.possible_castling_moves(piece)
             .iter()
             .map(|castling_move| castling_move.target)
             .for_each(|square| result.push(square));

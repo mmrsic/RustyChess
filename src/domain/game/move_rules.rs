@@ -36,15 +36,29 @@ impl ChessGameMove for CapturingMove {
     }
 }
 
-/*
-
 pub struct EnPassantMove {
     pub attacker: Piece,
-    pub victim: Piece,
+    pub victim_move: ExecutedMove,
     pub target: BoardSquare,
 }
 
- */
+impl EnPassantMove {
+    pub fn new(attacker: &Piece, victim_move: &ExecutedMove, target: &BoardSquare) -> Self {
+        Self {
+            attacker: *attacker,
+            victim_move: victim_move.clone(),
+            target: *target,
+        }
+    }
+}
+
+impl ChessGameMove for EnPassantMove {
+    fn execute(&self, game: &mut ChessGame) {
+        game.pieces
+            .retain(|game_piece| game_piece.square != self.victim_move.target_square);
+        Move::new(self.attacker.clone(), self.target).execute(game);
+    }
+}
 
 pub struct CastlingMove {
     pub king: Piece,

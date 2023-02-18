@@ -35,7 +35,13 @@ impl ChessGame {
             return;
         }
         let mut capture = false;
-        if let Some(target_piece) = self.piece_at(chosen_move.target.position()) {
+        let en_passant_target = self.en_passant_target();
+        if en_passant_target.is_some() && chosen_move.target == *en_passant_target.unwrap() {
+            let victim_move = self.executed_moves.last().unwrap();
+            EnPassantMove::new(&chosen_move.piece, victim_move, en_passant_target.unwrap())
+                .execute(self);
+            capture = true;
+        } else if let Some(target_piece) = self.piece_at(chosen_move.target.position()) {
             CapturingMove::new(chosen_move.piece.clone(), target_piece.clone()).execute(self);
             capture = true;
         } else if let Some(rook) = self.castling_rook(chosen_move) {
@@ -88,7 +94,7 @@ impl ChessGame {
     }
 
     /** The optional castling rook for a given move. Only present for Kings. */
-    pub fn castling_rook(&self, a_move: &Move) -> Option<&Piece> {
+    fn castling_rook(&self, a_move: &Move) -> Option<&Piece> {
         if a_move.piece.piece_type != PieceType::King {
             return None;
         }
@@ -102,6 +108,24 @@ impl ChessGame {
             "g" => self.piece_at((7, a_move.target.y())),
             _ => self.piece_at((0, a_move.target.y())),
         };
+    }
+    /** En passant target for a given executed move. */
+    fn en_passant_target(&self) -> Option<&BoardSquare> {
+        let all_moves = self.executed_moves();
+        let last_move = all_moves.last();
+        if last_move.is_none() {
+            return None;
+        }
+        let mov = last_move.unwrap();
+        if mov.piece.piece_type != PieceType::Pawn {
+            return None;
+        }
+        let y_delta = mov.delta().1;
+        if y_delta.abs() != 2 {
+            return None;
+        }
+        self.board
+            .square_relative(mov.start_square, (mov.delta().0, y_delta.signum()))
     }
 }
 
@@ -118,7 +142,10 @@ fn create_start_positions() -> Vec<Piece> {
             .for_each(|rook| result.push(rook.clone()));
         create_bishops_start(color)
             .iter()
-            .for_each(|bishop| result.push(bishop.clone()))
+            .for_each(|bishop| result.push(bishop.clone()));
+        create_pawns_start(color)
+            .iter()
+            .for_each(|pawn| result.push(pawn.clone()));
     }
     return result;
 }
@@ -172,6 +199,19 @@ fn create_bishops_start(color: PieceColor) -> Vec<Piece> {
     ]
 }
 
+fn create_pawns_start(color: PieceColor) -> Vec<Piece> {
+    let row = match color {
+        PieceColor::White => '2',
+        PieceColor::Black => '7',
+    };
+    let mut result = Vec::new();
+    ('a'..='h').for_each(|column| {
+        let square = BoardSquare::new(row, column);
+        result.push(Piece::new(PieceType::Pawn, color, square))
+    });
+    result
+}
+
 /** A single potential Chess game move of a piece onto an empty target field. */
 #[derive(Debug, Clone)]
 pub struct Move {
@@ -222,6 +262,11 @@ impl ExecutedMove {
     /** Whether this executed move represents a castling. */
     pub fn is_castling(&self) -> bool {
         is_castling_move(&self.piece, &self.start_square, &self.target_square)
+    }
+    pub fn delta(&self) -> (i8, i8) {
+        let start_pos = self.start_square.position();
+        let target_pos = self.target_square.position();
+        (target_pos.0 - start_pos.0, target_pos.1 - start_pos.1)
     }
 
     /** This move's coordinate notation string. Includes, chess, capture, and castling. */
