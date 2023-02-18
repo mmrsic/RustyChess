@@ -10,6 +10,7 @@ pub struct ChessGame {
     pub board: Chessboard,
     pub pieces: Vec<Piece>,
     executed_moves: Vec<ExecutedMove>,
+    chess_moves: Vec<Move>,
 }
 
 impl ChessGame {
@@ -19,6 +20,7 @@ impl ChessGame {
             board: Chessboard::new(),
             pieces: create_start_positions(),
             executed_moves: vec![],
+            chess_moves: vec![],
         }
     }
 
@@ -51,6 +53,7 @@ impl ChessGame {
         }
         let executed_move = ExecutedMove::new_from(chosen_move, capture, self.is_chess());
         self.executed_moves.push(executed_move);
+        self.chess_moves = self.calculate_chess();
     }
 
     pub fn executed_moves(&self) -> Vec<ExecutedMove> {
@@ -65,7 +68,12 @@ impl ChessGame {
     }
 
     /** A collection of all [Move]s which denote a chess in the current game. */
-    pub fn chess(&self) -> Vec<Move> {
+    pub fn chess_moves(&self) -> Vec<Move> {
+        self.chess_moves.clone()
+    }
+
+    /** Calculate a collection of all [Move]s which denote a chess in the current game. */
+    fn calculate_chess(&self) -> Vec<Move> {
         let mut result = Vec::new();
         self.pieces
             .iter()
@@ -81,7 +89,7 @@ impl ChessGame {
 
     /** Whether the king of a given piece color is currently in chess. */
     pub fn is_chess_color(&self, color: PieceColor) -> bool {
-        self.chess()
+        self.calculate_chess()
             .iter()
             .any(|chess_move| chess_move.piece.color != color)
     }

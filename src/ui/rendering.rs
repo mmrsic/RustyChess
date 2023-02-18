@@ -128,7 +128,7 @@ pub fn render_possible_moves(possible_moves: Vec<Move>, ctx: &mut BTerm) {
 pub fn render_chess(game: &ChessGame, ctx: &mut BTerm) {
     set_active_console_texts(ctx);
     ctx.cls();
-    let chess_moves = game.chess();
+    let chess_moves = game.chess_moves();
     if !chess_moves.is_empty() {
         set_active_console_board(ctx);
         let chess_square = chess_moves.iter().nth(0).unwrap().target;
