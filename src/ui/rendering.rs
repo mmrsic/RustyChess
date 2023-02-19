@@ -39,7 +39,7 @@ pub fn create_gui() -> BTerm {
         .with_fps_cap(25.0)
         .with_title("C H E S S")
         .with_tile_dimensions(TILE_WIDTH, TILE_HEIGHT)
-        .with_simple_console_no_bg(GRAPHICS_WIDTH, GRAPHICS_HEIGHT, CHESS_PIECES_FILE)
+        .with_sparse_console_no_bg(GRAPHICS_WIDTH, GRAPHICS_HEIGHT, CHESS_PIECES_FILE)
         .with_simple_console_no_bg(TEXT_WIDTH, TEXT_HEIGHT, TEXT_FILE)
         .with_advanced_input(true)
         .build()
