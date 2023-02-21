@@ -126,8 +126,6 @@ pub fn render_possible_moves(possible_moves: Vec<Move>, ctx: &mut BTerm) {
 }
 
 pub fn render_chess(game: &ChessGame, ctx: &mut BTerm) {
-    set_active_console_texts(ctx);
-    ctx.cls();
     let chess_moves = game.chess_moves();
     if !chess_moves.is_empty() {
         set_active_console_board(ctx);
@@ -140,6 +138,30 @@ pub fn render_chess(game: &ChessGame, ctx: &mut BTerm) {
             to_cp437(CHESS_CODE),
         );
     }
+}
+
+pub(super) fn render_promotion_pawn(optional_pawn: Option<Piece>, ctx: &mut BTerm) {
+    if let Some(pawn) = optional_pawn {
+        set_active_console_board(ctx);
+        ctx.set(
+            pawn.square.x(),
+            pawn.square.y(),
+            LIGHT_SALMON,
+            to_square_ui_color(pawn.square.color()),
+            to_cp437(CHESS_CODE),
+        );
+    }
+}
+
+pub(super) fn render_selected_piece(piece: &Piece, ctx: &mut BTerm) {
+    set_active_console_board(ctx);
+    ctx.set(
+        piece.square.x(),
+        piece.square.y(),
+        LIGHT_CYAN,
+        to_square_ui_color(piece.square.color()),
+        to_cp437(CHESS_CODE),
+    );
 }
 
 fn set_active_console_texts(ctx: &mut BTerm) {
@@ -161,15 +183,18 @@ pub fn render_executed_moves(game: &ChessGame, ctx: &mut BTerm) {
     });
 }
 
-pub(crate) fn main(main_state: MainState) -> BError {
-    main_loop(create_gui(), main_state)
-}
-
 impl GameState for MainState {
     fn tick(&mut self, ctx: &mut BTerm) {
         render_board(&self.game.board, ctx);
         render_pieces(&self.game.pieces, ctx);
         render_chess(&self.game, ctx);
+        render_promotion_pawn(self.game.promotion_pawn(), ctx);
+        match &self.app_state {
+            AppState::AwaitingMoveSelection { user_move } => {
+                render_selected_piece(&user_move.piece, ctx)
+            }
+            AppState::AwaitingPieceSelection => {}
+        }
         render_executed_moves(&self.game, ctx);
 
         set_active_console_pieces(ctx);

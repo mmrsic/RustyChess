@@ -6,7 +6,6 @@ pub trait ChessGameMove {
     fn execute(&self, game: &mut ChessGame);
 }
 
-#[derive(Debug, Clone)]
 pub struct CapturingMove {
     pub attacker: Piece,
     pub victim: Piece,

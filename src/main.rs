@@ -1,4 +1,5 @@
 use crate::domain::game::ChessGame;
+use crate::domain::pieces::PieceType;
 use crate::ui::user_move::UserMove;
 
 mod domain;
@@ -6,7 +7,14 @@ mod ui;
 
 /** Main entry point of the application. */
 fn main() {
-    ui::rendering::main(MainState::new()).unwrap()
+    ui::main(MainState::new()).unwrap()
+}
+
+/** All possible states of the application. */
+#[derive(Debug)]
+enum AppState {
+    AwaitingPieceSelection,
+    AwaitingMoveSelection { user_move: UserMove },
 }
 
 /** Main state consisting of the chess game and the state of the application. */
@@ -27,6 +35,13 @@ impl MainState {
         match &self.app_state {
             AppState::AwaitingPieceSelection => {
                 if let Some(selected_piece) = self.game.piece_at(coord) {
+                    let promo_pawn = self.game.promotion_pawn();
+                    if promo_pawn.is_some() {
+                        if selected_piece.square == promo_pawn.unwrap().square {
+                            self.game.exchange_promotion_pawn(PieceType::Queen);
+                            return;
+                        }
+                    }
                     let possible_moves = self.game.possible_moves(selected_piece);
                     self.app_state = AppState::AwaitingMoveSelection {
                         user_move: UserMove::new(selected_piece.clone(), possible_moves),
@@ -46,11 +61,4 @@ impl MainState {
             }
         }
     }
-}
-
-/** All possible states of the application. */
-#[derive(Debug)]
-enum AppState {
-    AwaitingPieceSelection,
-    AwaitingMoveSelection { user_move: UserMove },
 }

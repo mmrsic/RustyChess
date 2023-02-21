@@ -6,6 +6,10 @@ use crate::domain::pieces::CapturePolicy::Mandatory;
 impl ChessGame {
     /** All possible moves a given piece can currently make in this [ChessGame]. */
     pub fn possible_moves(&self, piece: &Piece) -> Vec<Move> {
+        if self.promotion_pawn().is_some() {
+            return Vec::new();
+        }
+
         self.possible_targets(piece)
             .iter()
             .map(|target| Move {

@@ -11,6 +11,7 @@ pub struct ChessGame {
     pub pieces: Vec<Piece>,
     executed_moves: Vec<ExecutedMove>,
     chess_moves: Vec<Move>,
+    promotion_pawn: Option<Piece>,
 }
 
 impl ChessGame {
@@ -21,6 +22,7 @@ impl ChessGame {
             pieces: create_start_positions(),
             executed_moves: vec![],
             chess_moves: vec![],
+            promotion_pawn: None,
         }
     }
 
@@ -31,9 +33,38 @@ impl ChessGame {
             .find(|piece| piece.square.x() == coord.0 as i8 && piece.square.y() == coord.1 as i8)
     }
 
+    /** The (only) pawn which must be promoted before the next move can be made.
+    See: [ChessGame::exchange_promotion_pawn]*/
+    pub fn promotion_pawn(&self) -> Option<Piece> {
+        self.promotion_pawn.clone()
+    }
+
+    /** Exchange the current pawn waiting for promotion with a new piece type.
+    See: [ChessGame::promotion_pawn]. */
+    pub fn exchange_promotion_pawn(&mut self, new_type: PieceType) {
+        if let Some(promotion_pawn) = self.promotion_pawn {
+            self.replace_piece_type(promotion_pawn, new_type);
+            self.promotion_pawn = None;
+        }
+    }
+
+    fn replace_piece_type(&mut self, old_piece: Piece, new_type: PieceType) {
+        self.pieces
+            .iter_mut()
+            .filter(|game_piece| game_piece.square == old_piece.square)
+            .for_each(|game_piece| game_piece.piece_type = new_type);
+    }
+
     /** Execute a given move in this game. No checks are made whether this is an allowed move. */
     pub fn execute_move(&mut self, chosen_move: &Move) {
         if chosen_move.piece.square == chosen_move.target {
+            return;
+        }
+        if let Some(pawn) = self.promotion_pawn {
+            println!(
+                "Cannot execute move: Pawn must be converted first: {:?}",
+                pawn
+            );
             return;
         }
         let mut capture = false;
@@ -54,6 +85,7 @@ impl ChessGame {
         let executed_move = ExecutedMove::new_from(chosen_move, capture, self.is_chess());
         self.executed_moves.push(executed_move);
         self.chess_moves = self.calculate_chess();
+        self.promotion_pawn = self.check_promotion_pawn().cloned();
     }
 
     pub fn executed_moves(&self) -> Vec<ExecutedMove> {
@@ -134,6 +166,14 @@ impl ChessGame {
         }
         self.board
             .square_relative(mov.start_square, (mov.delta().0, y_delta.signum()))
+    }
+
+    /** Optional Pawn that must be promoted before game may continue. */
+    fn check_promotion_pawn(&self) -> Option<&Piece> {
+        self.pieces
+            .iter()
+            .filter(|piece| piece.piece_type == PieceType::Pawn)
+            .find(|pawn| ["1".to_string(), "8".to_string()].contains(&pawn.square.rank()))
     }
 }
 
