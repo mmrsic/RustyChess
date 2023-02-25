@@ -10,10 +10,21 @@ pub enum PieceType {
     Pawn,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum PieceColor {
     White,
     Black,
+}
+
+impl PieceColor {
+    /** The opponent's color of this instance. */
+    pub fn opponent(&self) -> PieceColor {
+        if self == &PieceColor::White {
+            PieceColor::Black
+        } else {
+            PieceColor::White
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Copy)]

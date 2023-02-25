@@ -4,6 +4,13 @@ use crate::domain::game::*;
 use crate::domain::pieces::CapturePolicy::Mandatory;
 
 impl ChessGame {
+    /** Whether any of the pieces of this game of a given color is able to execute a valid move. */
+    pub fn can_move(&self, color: &PieceColor) -> bool {
+        self.pieces
+            .iter()
+            .any(|piece| piece.color == *color && !self.possible_moves(piece).is_empty())
+    }
+
     /** All possible moves a given piece can currently make in this [ChessGame]. */
     pub fn possible_moves(&self, piece: &Piece) -> Vec<Move> {
         if self.promotion_pawn().is_some() {
@@ -16,7 +23,7 @@ impl ChessGame {
                 piece: piece.clone(),
                 target: *target,
             })
-            .filter(|chess_move| !self.is_chess_after_move(chess_move))
+            .filter(|chess_move| !self.is_check_after_move(chess_move))
             .filter(|chess_move| {
                 !is_castling_move(
                     &chess_move.piece,
@@ -26,7 +33,7 @@ impl ChessGame {
                     .board
                     .all_squares_between(chess_move.piece.square, chess_move.target)
                     .iter()
-                    .all(|square| !self.is_chess_after_move(&Move::new(*piece, *square)))
+                    .all(|square| !self.is_check_after_move(&Move::new(*piece, *square)))
             })
             .collect()
     }
@@ -140,8 +147,17 @@ impl ChessGame {
     }
 
     /** Check whether a given move when executed leaves the moving piece color in chess. */
-    fn is_chess_after_move(&self, chess_move: &Move) -> bool {
+    fn is_check_after_move(&self, chess_move: &Move) -> bool {
         self.calculate_move(chess_move)
-            .is_chess_color(chess_move.piece.color)
+            .is_check_color(chess_move.piece.color)
+    }
+
+    pub fn is_check_mate(&self) -> bool {
+        let next_color = self.next_move_color();
+        self.is_check_color(next_color) && !self.can_move(&next_color)
+    }
+    pub fn is_stalemate(&self) -> bool {
+        let next_color = self.next_move_color();
+        !self.is_check_color(next_color) && !self.can_move(&next_color)
     }
 }

@@ -125,7 +125,17 @@ pub fn render_possible_moves(possible_moves: Vec<Move>, ctx: &mut BTerm) {
     });
 }
 
-pub fn render_chess(game: &ChessGame, ctx: &mut BTerm) {
+pub fn render_game_end_and_check(game: &ChessGame, ctx: &mut BTerm) {
+    if game.is_check_mate() {
+        render_check_mate(ctx);
+    } else if game.is_stalemate() {
+        render_stalemate(ctx);
+    } else {
+        render_check(game, ctx);
+    }
+}
+
+fn render_check(game: &ChessGame, ctx: &mut BTerm) {
     let chess_moves = game.chess_moves();
     if !chess_moves.is_empty() {
         set_active_console_board(ctx);
@@ -138,6 +148,18 @@ pub fn render_chess(game: &ChessGame, ctx: &mut BTerm) {
             to_cp437(CHESS_CODE),
         );
     }
+}
+
+fn render_check_mate(ctx: &mut BTerm) {
+    set_active_console_texts(ctx);
+    ctx.cls();
+    ctx.print(TEXT_LEFT_START, 0, "C H E C K   M A T E");
+}
+
+fn render_stalemate(ctx: &mut BTerm) {
+    set_active_console_texts(ctx);
+    ctx.cls();
+    ctx.print(TEXT_LEFT_START, 0, "STALEMATE");
 }
 
 pub(super) fn render_promotion_pawn(optional_pawn: Option<Piece>, ctx: &mut BTerm) {
@@ -187,7 +209,7 @@ impl GameState for MainState {
     fn tick(&mut self, ctx: &mut BTerm) {
         render_board(&self.game.board, ctx);
         render_pieces(&self.game.pieces, ctx);
-        render_chess(&self.game, ctx);
+        render_game_end_and_check(&self.game, ctx);
         render_promotion_pawn(self.game.promotion_pawn(), ctx);
         match &self.app_state {
             AppState::AwaitingMoveSelection { user_move } => {

@@ -1,5 +1,5 @@
 use crate::domain::game::ChessGame;
-use crate::domain::pieces::PieceType;
+use crate::domain::pieces::{PieceColor, PieceType};
 use crate::ui::user_move::UserMove;
 
 mod domain;
@@ -49,6 +49,7 @@ impl MainState {
                 } else if let Some(square) = self.game.board.square_at(coord) {
                     let challengers = self.game.square_challengers(square);
                     println!("Challengers for {}: {:?}", square, challengers);
+                    println!("Can move = {:?}", self.game.can_move(&PieceColor::White));
                 }
             }
             AppState::AwaitingMoveSelection { user_move } => {

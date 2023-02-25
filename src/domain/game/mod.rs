@@ -12,6 +12,7 @@ pub struct ChessGame {
     executed_moves: Vec<ExecutedMove>,
     chess_moves: Vec<Move>,
     promotion_pawn: Option<Piece>,
+    initial_color: PieceColor,
 }
 
 impl ChessGame {
@@ -23,6 +24,7 @@ impl ChessGame {
             executed_moves: vec![],
             chess_moves: vec![],
             promotion_pawn: None,
+            initial_color: PieceColor::White,
         }
     }
 
@@ -67,6 +69,10 @@ impl ChessGame {
             );
             return;
         }
+        if self.next_move_color() != chosen_move.piece.color {
+            return;
+        }
+
         let mut capture = false;
         let en_passant_target = self.en_passant_target();
         if en_passant_target.is_some() && chosen_move.target == *en_passant_target.unwrap() {
@@ -82,12 +88,13 @@ impl ChessGame {
         } else {
             Move::new(chosen_move.piece.clone(), chosen_move.target).execute(self);
         }
-        let executed_move = ExecutedMove::new_from(chosen_move, capture, self.is_chess());
+        let executed_move = ExecutedMove::new_from(chosen_move, capture, self.is_check());
         self.executed_moves.push(executed_move);
-        self.chess_moves = self.calculate_chess();
+        self.chess_moves = self.calculate_check();
         self.promotion_pawn = self.check_promotion_pawn().cloned();
     }
 
+    /** All the moves of this game in the order they were executed. */
     pub fn executed_moves(&self) -> Vec<ExecutedMove> {
         self.executed_moves.clone()
     }
@@ -99,13 +106,21 @@ impl ChessGame {
             .any(|executed_move| executed_move.start_square == piece.start_square())
     }
 
+    /** The piece color which is allowed to move next. */
+    pub fn next_move_color(&self) -> PieceColor {
+        if self.executed_moves().len() % 2 == 0 {
+            return self.initial_color;
+        };
+        self.initial_color.opponent()
+    }
+
     /** A collection of all [Move]s which denote a chess in the current game. */
     pub fn chess_moves(&self) -> Vec<Move> {
         self.chess_moves.clone()
     }
 
     /** Calculate a collection of all [Move]s which denote a chess in the current game. */
-    fn calculate_chess(&self) -> Vec<Move> {
+    fn calculate_check(&self) -> Vec<Move> {
         let mut result = Vec::new();
         self.pieces
             .iter()
@@ -119,18 +134,18 @@ impl ChessGame {
         result
     }
 
-    /** Whether the king of a given piece color is currently in chess. */
-    pub fn is_chess_color(&self, color: PieceColor) -> bool {
-        self.calculate_chess()
+    /** Whether the king of a given piece color is currently in check. */
+    pub fn is_check_color(&self, color: PieceColor) -> bool {
+        self.calculate_check()
             .iter()
             .any(|chess_move| chess_move.piece.color != color)
     }
 
-    /** Whether any of the kings of this game is currently in chess. */
-    pub fn is_chess(&self) -> bool {
+    /** Whether any of the kings of this game is currently in check. */
+    pub fn is_check(&self) -> bool {
         [PieceColor::White, PieceColor::Black]
             .iter()
-            .any(|color| self.is_chess_color(*color))
+            .any(|color| self.is_check_color(*color))
     }
 
     /** The optional castling rook for a given move. Only present for Kings. */
