@@ -47,6 +47,7 @@ impl ChessGame {
         if let Some(promotion_pawn) = self.promotion_pawn {
             self.replace_piece_type(promotion_pawn, new_type);
             self.promotion_pawn = None;
+            self.chess_moves = self.calculate_check();
         }
     }
 
